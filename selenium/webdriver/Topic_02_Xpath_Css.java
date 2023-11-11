@@ -60,7 +60,7 @@ public class Topic_02_Xpath_Css {
 
     }
     @Test
-    public void TC_03_Empty_Data() {
+    public void TC_03_Incorrect_Confirm_Email() {
         driver.get("https://alada.vn/tai-khoan/dang-ky.html");
 
         driver.findElement(By.id("txtFirstname")).sendKeys("Tinh Nguyen");
@@ -75,7 +75,7 @@ public class Topic_02_Xpath_Css {
 
     }
     @Test
-    public void TC_04_Empty_Data() {
+    public void TC_04_Password_Length() {
         driver.get("https://alada.vn/tai-khoan/dang-ky.html");
 
         driver.findElement(By.id("txtFirstname")).sendKeys("Tinh Nguyen");
@@ -90,7 +90,7 @@ public class Topic_02_Xpath_Css {
         Assert.assertEquals(driver.findElement(By.id("txtCPassword-error")).getText(),"Mật khẩu phải có ít nhất 6 ký tự");
     }
     @Test
-    public void TC_05_Empty_Data() {
+    public void TC_05_Incorrect_Confirm_Password() {
         driver.get("https://alada.vn/tai-khoan/dang-ky.html");
 
         driver.findElement(By.id("txtFirstname")).sendKeys("Tinh Nguyen");
@@ -104,7 +104,7 @@ public class Topic_02_Xpath_Css {
         Assert.assertEquals(driver.findElement(By.id("txtCPassword-error")).getText(),"Mật khẩu bạn nhập không khớp");
     }
     @Test
-    public void TC_06_Empty_Data() {
+    public void TC_06_Invalid_Phonenumber() {
         driver.get("https://alada.vn/tai-khoan/dang-ky.html");
 
         driver.findElement(By.id("txtFirstname")).sendKeys("Tinh Nguyen");
