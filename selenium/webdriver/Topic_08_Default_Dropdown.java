@@ -11,6 +11,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +88,39 @@ public class Topic_08_Default_Dropdown {
     }
 
 
+
+    @Test
+    public void TC_02() {
+        driver.get("https://rode.com/en/support/where-to-buy");
+
+        if (driver.findElement(By.id("RODE-GDPRx")).isDisplayed() == true){
+            driver.findElement(By.xpath("//div[@id='RODE-GDPRx']//button[contains(text(),'Allow All')]")).click();
+            driver.findElement(By.xpath("//button[text()='OK']")).click();
+        }
+        Select countryDropdown = new Select(driver.findElement(By.id("country")));
+        Assert.assertFalse(countryDropdown.isMultiple());
+
+        countryDropdown.selectByVisibleText("Vietnam");
+        Assert.assertEquals(driver.findElement(By.id("country")).getAttribute("value"),"Vietnam");
+        driver.findElement(By.xpath("//button[text()='Search']")).click();
+
+        List<WebElement> distributorName = driver.findElements(By.xpath("//div[@class='my-3']//h4[@class='text-left']"));
+        for (WebElement element : distributorName){
+            System.out.println(element.getText());
+        }
+
+    }
+
+    @Test
+    public void TC_03() {
+        driver.get("https://applitools.com/automating-tests-chrome-devtools-recorder-webinar/");
+
+        new Select(driver.findElement(By.id("Person_Role__c"))).selectByVisibleText("SDET / Test Automation Engineer");
+        new Select(driver.findElement(By.id("Test_Framework__c"))).selectByVisibleText("Selenium");
+        new Select(driver.findElement(By.id("Self_Report_Country__c"))).selectByVisibleText("Vietnam");
+
+    }
+
     public void sleepInSecond(long timeInSecond) {
         try {
             Thread.sleep(1000 * timeInSecond); // Ngủ 1 giây
@@ -95,7 +129,6 @@ public class Topic_08_Default_Dropdown {
             Thread.currentThread().interrupt(); // Bảo vệ lại trạng thái interrupt
         }
     }
-
 
     @AfterClass
     public void afterClass() {
