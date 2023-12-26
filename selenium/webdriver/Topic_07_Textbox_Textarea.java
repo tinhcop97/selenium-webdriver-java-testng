@@ -35,6 +35,12 @@ public class Topic_07_Textbox_Textarea {
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         driver.manage().window().maximize();
 
+        emailAdress = "Automation" + rand.nextInt(9999) + "@gmail.com";
+        firstName = "Automation";
+        lastName = "FC";
+        fullName = firstName + " " + lastName;
+        password = "12345678";
+
 
     }
 
@@ -136,7 +142,9 @@ public class Topic_07_Textbox_Textarea {
 
     }
 
-    public void sleepInSecond(long timeInSecond) {
+
+
+        public void sleepInSecond(long timeInSecond) {
         try {
             Thread.sleep(1000*timeInSecond); // Ngủ 1 giây
         } catch (InterruptedException e) {
