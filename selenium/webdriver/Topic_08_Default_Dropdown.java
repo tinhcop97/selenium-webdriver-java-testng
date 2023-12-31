@@ -71,15 +71,16 @@ public class Topic_08_Default_Dropdown {
         driver.get("https://demo.nopcommerce.com/login?returnUrl=%2Fcustomer%2Finfo");
         driver.findElement(By.id("Email")).sendKeys(emailAdress);
         driver.findElement(By.id("Password")).sendKeys(password);
+        sleepInSecond(1);
         driver.findElement(By.id("Password")).sendKeys(Keys.ENTER);
-//        try {
-//            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Đợi trong vòng 10 giây
-//            wait.until(ExpectedConditions.alertIsPresent());
-//            Alert alert = driver.switchTo().alert();
-//            alert.dismiss(); // hoặc alert.accept() tùy thuộc vào hành động bạn muốn thực hiện
-//        } catch (TimeoutException e) {
-//            // Nếu không có dialog alert xuất hiện trong thời gian chờ, bỏ qua và tiếp tục
-//        }
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Đợi trong vòng 10 giây
+            wait.until(ExpectedConditions.alertIsPresent());
+            Alert alert = driver.switchTo().alert();
+            alert.dismiss(); // hoặc alert.accept() tùy thuộc vào hành động bạn muốn thực hiện
+        } catch (TimeoutException e) {
+            // Nếu không có dialog alert xuất hiện trong thời gian chờ, bỏ qua và tiếp tục
+        }
         driver.findElement(By.xpath("//a[text()='My account']")).click();
 
         Assert.assertEquals(new Select(driver.findElement(By.name("DateOfBirthDay"))).getFirstSelectedOption().getText(),day);
@@ -115,8 +116,16 @@ public class Topic_08_Default_Dropdown {
     public void TC_03() {
         driver.get("https://applitools.com/automating-tests-chrome-devtools-recorder-webinar/");
 
+        if (driver.findElement(By.id("onetrust-pc-btn-handler")).isDisplayed() == true){
+            driver.findElement(By.id("onetrust-pc-btn-handler")).click();
+            driver.findElement(By.xpath("//button[@class='save-preference-btn-handler onetrust-close-btn-handler']")).click();
+        }
+        sleepInSecond(1);
+
         new Select(driver.findElement(By.id("Person_Role__c"))).selectByVisibleText("SDET / Test Automation Engineer");
+        sleepInSecond(1);
         new Select(driver.findElement(By.id("Test_Framework__c"))).selectByVisibleText("Selenium");
+        sleepInSecond(1);
         new Select(driver.findElement(By.id("Self_Report_Country__c"))).selectByVisibleText("Vietnam");
 
     }
