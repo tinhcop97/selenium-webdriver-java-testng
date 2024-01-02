@@ -101,6 +101,7 @@ public class Topic_08_Default_Dropdown {
         Select countryDropdown = new Select(driver.findElement(By.id("country")));
         Assert.assertFalse(countryDropdown.isMultiple());
 
+        sleepInSecond(1);
         countryDropdown.selectByVisibleText("Vietnam");
         Assert.assertEquals(driver.findElement(By.id("country")).getAttribute("value"),"Vietnam");
         driver.findElement(By.xpath("//button[text()='Search']")).click();
