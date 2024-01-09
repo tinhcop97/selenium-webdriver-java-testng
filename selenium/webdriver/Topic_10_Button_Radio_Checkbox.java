@@ -11,6 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -85,8 +86,8 @@ public class Topic_10_Button_Radio_Checkbox {
 
     @Test
     public void TC_getByDateToDate() {
-        String fromDate = "2023-12-27";
-        String toDate = "2024-01-02";
+        String fromDate = "2023-01-01";
+        String toDate = "2023-12-31";
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Data");
@@ -96,9 +97,15 @@ public class Topic_10_Button_Radio_Checkbox {
         Row headerRow = sheet.createRow(0);
         Cell headerCellDate = headerRow.createCell(0);
         Cell headerCellOutput = headerRow.createCell(1);
+        Cell headerCellResult = headerRow.createCell(2);
+        Cell headerCellx = headerRow.createCell(3);
+        Cell headerCellQuantity = headerRow.createCell(4);
 
         headerCellDate.setCellValue("Ngày");
-        headerCellOutput.setCellValue("Kết quả");
+        headerCellOutput.setCellValue("Dàn");
+        headerCellResult.setCellValue("Kết quả");
+        headerCellx.setCellValue("");
+        headerCellQuantity.setCellValue("Số lượng");
 
         int rowNum = 1;
 
@@ -137,8 +144,115 @@ public class Topic_10_Button_Radio_Checkbox {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // check Kết quả
+        try (FileInputStream inputStream = new FileInputStream("data.xlsx")) {
+            workbook = new XSSFWorkbook(inputStream);
+            sheet = workbook.getSheet("Data");
+            if (sheet == null) {
+                sheet = workbook.createSheet("Data");
+            }
+        } catch (IOException e) {
+            workbook = new XSSFWorkbook();
+            sheet = workbook.createSheet("Data");
+        }
 
-        driver.quit();
+        int newRowNum = 1;
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            String formattedDate = date.format(formatter);
+
+            Row row = sheet.getRow(newRowNum);
+            if (row == null) {
+                row = sheet.createRow(newRowNum);
+            }
+
+            Cell dateCell = row.createCell(0);
+            dateCell.setCellValue(formattedDate);
+
+            String url = "https://rongbachkim.com/ketqua.html#" + formattedDate + ",0";
+            driver.get(url);
+            driver.navigate().refresh();
+
+            WebElement daysInput = driver.findElement(By.xpath("//input[@id='days']"));
+            daysInput.clear();
+            daysInput.sendKeys("1");
+
+            driver.findElement(By.xpath("//input[@name='daudit']")).click();
+            driver.findElement(By.xpath("//input[@name='showdbonly']")).click();
+            driver.findElement(By.xpath("//input[@value=' Xem kết quả ']")).click();
+
+            WebElement dbResult = driver.findElement(By.xpath("//td[text()='ĐB']/following-sibling::td"));
+            String resultText = dbResult.getText().substring(dbResult.getText().length()-2);
+
+            Cell resultCell = row.createCell(2);
+            resultCell.setCellValue(resultText);
+
+            newRowNum++;
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream("data.xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int lastRowNum = sheet.getLastRowNum() + 1;
+
+        for (int i = 1; i < lastRowNum; i++) {
+            Row row = sheet.getRow(i);
+            Cell cellColumn2 = row.getCell(1);
+            Cell cellColumn3 = row.getCell(2);
+            Cell cellColumn4 = row.createCell(3);
+
+            if (cellColumn2 != null && cellColumn3 != null) {
+                String valueColumn2 = cellColumn2.getStringCellValue();
+                String valueColumn3 = cellColumn3.getStringCellValue();
+
+                // Split valueColumn2 into an array of strings
+                String[] column2Values = valueColumn2.split(" ");
+
+                boolean found = false;
+                for (String item : column2Values) {
+                    if (item.equals(valueColumn3)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    cellColumn4.setCellValue("x");
+                }
+            }
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream("data.xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 1; i < lastRowNum; i++) {
+            Row row = sheet.getRow(i);
+            Cell cellColumn2 = row.getCell(1);
+            Cell cellColumn5 = row.createCell(4); // Cột 5 là cột E
+
+            if (cellColumn2 != null) {
+                String valueColumn2 = cellColumn2.getStringCellValue();
+
+                // Split valueColumn2 into an array of strings
+                String[] column2Values = valueColumn2.split(" ");
+
+                // Ghi số lượng phần tử vào cột 5
+                cellColumn5.setCellValue(column2Values.length);
+            }
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream("data.xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        driver.quit();
 
     }
 
