@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.support.Color;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -52,14 +53,29 @@ public class Topic_10_Button_Radio_Checkbox {
     public void TC_01_Button() {
         driver.get("https://www.fahasa.com/customer/account/create");
 
-        driver.findElement(By.id("popup-login-tab_list")).click();
+        driver.findElement(By.xpath("//a[text()='Đăng nhập']/parent::li")).click();
 
-        By loginButton = By.cssSelector("fhs-btn-login");
+        By loginButton = By.cssSelector("button.fhs-btn-login");
 
         //verify login button disable
         Assert.assertFalse(driver.findElement(loginButton).isEnabled());
 
-        String loginButtonBackgroundColor = driver.findElement(loginButton).getCssValue("background-color");
+        //verify nút đăng nhập lúc disable có màu xám
+        String loginDisableBackgroundHexa = driver.findElement(loginButton).getCssValue("background-image");
+        System.out.println(loginDisableBackgroundHexa);
+        Assert.assertTrue(loginDisableBackgroundHexa.contains("rgb(224, 224, 224)"));
+
+        //nhập email pass
+        driver.findElement(By.cssSelector("input#login_username")).sendKeys("a@gmail.com");
+        driver.findElement(By.cssSelector("input#login_password")).sendKeys("123456");
+
+
+        //verify login button enable
+        Assert.assertTrue(driver.findElement(loginButton).isEnabled());
+        String loginButtonEnableBackgroundHexa = driver.findElement(loginButton).getCssValue("background-color");
+        Color loginBackgroundColor = Color.fromString(loginButtonEnableBackgroundHexa);
+        System.out.println(loginBackgroundColor.asHex());
+        Assert.assertEquals(loginBackgroundColor.asHex().toUpperCase(),"#C92127");
 
 
     }
