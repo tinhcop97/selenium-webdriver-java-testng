@@ -19,10 +19,7 @@ import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.support.Color;
@@ -648,6 +645,159 @@ public class Topic_10_Button_Radio_Checkbox {
             maxDistances.add(maxDistance);
         }
         return maxDistances;
+    }
+
+    @Test
+    public void TC_ccxs() throws IOException{
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("MB");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("7x loại 1x");
+
+        // Khởi tạo biến để lưu trữ kết quả log
+        StringBuilder valueOfDate = new StringBuilder();
+
+        // Danh sách các URL cần truy cập
+        List<String> urls = Arrays.asList(
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietEventMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietThiDauMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietMoBatMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietDanMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietLoaiMucSoVaDan9x0x_V2.aspx"
+        );
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("28/10/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            // Lặp qua từng URL trong danh sách
+            for (String url : urls) {
+//                valueOfDate.append("Kết quả cho URL ").append(url).append(" ngày ").append(formattedDate).append(":\n");
+                valueOfDate.append(retrieveResults(url, formattedDate)).append("\n");
+            }
+
+            // Tiếp tục thực hiện các thao tác trên trang khác
+            driver.get("https://taodanxoso.kangdh.com/");
+
+            // Clear hộp input
+            WebElement clearButton = driver.findElement(By.xpath("//input[@id='k_btnClear3']"));
+            clearButton.click();
+
+            // Nhập kết quả vào textarea
+            WebElement inputTextarea = driver.findElement(By.xpath("//textarea[@id='MainContent_txtInput']"));
+            inputTextarea.clear();
+            inputTextarea.sendKeys(valueOfDate.toString());
+
+            // Nhấn nút Tạo Mức 2D
+            WebElement create2DButton = driver.findElement(By.xpath("//input[@value='Tạo Mức 2D']"));
+            create2DButton.click();
+
+            // Nhấn nút Dàn Xuôi
+            WebElement danXuoiButton = driver.findElement(By.xpath("//button[text()='Dàn Xuôi']"));
+            danXuoiButton.click();
+
+            // Đợi cho đến khi textarea có nội dung
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            wait.until(driver -> !driver.findElement(By.xpath("//textarea[@id='catdanfinal']")).getAttribute("value").isEmpty());
+
+            // Lấy kết quả từ ô textarea
+            WebElement resultTextarea = driver.findElement(By.xpath("//textarea[@id='catdanfinal']"));
+            String finalResult = resultTextarea.getAttribute("value");
+
+//            // In kết quả cuối cùng ra console
+//            System.out.println("Kết quả Dàn Xuôi cho ngày " + formattedDate + ": ");
+//            System.out.println(finalResult);
+
+            // Phân tách các dàn
+            String[] lines = finalResult.split("\n");
+            String lineUnder7x = "";
+            String lineUnder1x = "";
+
+            // Lặp qua từng dòng để tìm dàn 7x và dàn 1x
+            for (int i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith("7x") && i + 1 < lines.length) {
+                    lineUnder7x = lines[i + 1]; // Dòng dưới dàn 7x
+                } else if (lines[i].startsWith("1x") && i + 1 < lines.length) {
+                    lineUnder1x = lines[i + 1]; // Dòng dưới dàn 1x
+                }
+            }
+
+//            // In ra các dòng dưới dàn 7x và 1x
+//            System.out.println("Dòng dưới dàn 7x: " + lineUnder7x);
+//            System.out.println("Dòng dưới dàn 1x: " + lineUnder1x);
+
+            // Tạo một tập hợp để lưu các số từ dòng 1x
+            Set<String> set1x = new HashSet<>(Arrays.asList(lineUnder1x.split(",")));
+
+            // Tách dòng 7x thành mảng các số
+            String[] numbers7x = lineUnder7x.split(",");
+
+            // Duyệt qua mảng 7x và loại bỏ các số có trong 1x
+            StringBuilder result7x = new StringBuilder();
+            for (String number : numbers7x) {
+                if (!set1x.contains(number)) {
+                    result7x.append(number).append(","); // Thêm số vào kết quả nếu không có trong 1x
+                }
+            }
+
+            // Xóa dấu phẩy cuối cùng nếu có
+            if (result7x.length() > 0) {
+                result7x.setLength(result7x.length() - 1);
+            }
+
+//            // In ra kết quả
+//            System.out.println("Dòng dưới dàn 7x sau khi loại bỏ dàn 1x: " + result7x.toString());
+
+            // Lưu kết quả vào Excel
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(formattedDate);
+            row.createCell(1).setCellValue(result7x.toString());
+
+            // Reset valueOfDate cho vòng lặp tiếp theo
+            valueOfDate.setLength(0);
+        }
+
+        // Lưu Workbook vào tệp Excel
+        try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+    }
+
+    private String retrieveResults(String url, String date) {
+        driver.get(url);
+
+        WebElement dateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay']"));
+        dateInput.clear();
+        dateInput.sendKeys(date);
+
+        WebElement xemButton = driver.findElement(By.xpath("//input[@value='Xem']"));
+        xemButton.click();
+
+        sleepInSecond(1);
+
+        List<WebElement> results = driver.findElements(By.xpath("//td[@style='width:799px;']"));
+
+        // Biến lưu trữ kết quả cho từng URL
+        StringBuilder resultString = new StringBuilder();
+
+        for (WebElement result : results) {
+            resultString.append(result.getText()).append("\n");
+        }
+
+        return resultString.toString();
     }
 
     @Test
