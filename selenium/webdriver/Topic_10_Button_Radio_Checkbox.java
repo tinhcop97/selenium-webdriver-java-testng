@@ -801,6 +801,125 @@ public class Topic_10_Button_Radio_Checkbox {
     }
 
     @Test
+    public void TC_4D() throws IOException {
+        // Cấu hình startDate và endDate theo định dạng DD-MM-YYYY
+        String startDateStr = "29-10-2024";
+        String endDateStr = "31-10-2024";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+        LocalDate endDate = LocalDate.parse(endDateStr, formatter);
+
+        // Tạo workbook và sheet mới
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("4D");
+
+        // Tạo hàng tiêu đề
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ");
+        headerRow.createCell(2).setCellValue("Xịt");
+
+        // Biến rowNum để bắt đầu từ hàng 1
+        int rowNum = 1;
+
+        // Vòng lặp từ endDate về startDate
+        while (!endDate.isBefore(startDate)) {
+            String currentDateStr = endDate.format(formatter);
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(currentDateStr);
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("300");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+            sleepInSecond(3);
+
+            List<WebElement> prizes = driver.findElements(By.xpath("//td/div/div[contains(@class, 'phoi-size')]"));
+
+            // Tạo hàng mới và điền ngày vào cột A (A2, A3, ...)
+            Row row = sheet.createRow(rowNum++);
+            // Cộng thêm 1 ngày vào currentDateStr và ghi vào ô
+            String nextDateStr = endDate.plusDays(1).format(formatter);
+            row.createCell(0).setCellValue(nextDateStr);
+
+            int cellNum = 3; // Bắt đầu từ cột B
+            for (WebElement prize : prizes) {
+                String prizeText = prize.getText();
+                // Kiểm tra và chỉ lấy 4 chữ số cuối nếu prizeText có 5 chữ số
+                if (prizeText.matches("\\d{4,}")) {
+                    if (prizeText.length() == 5) {
+                        prizeText = prizeText.substring(1);  // Lấy từ vị trí 1 đến cuối
+                    }
+                    row.createCell(cellNum++).setCellValue(prizeText);
+                }
+            }
+
+            // Lùi ngày thêm 1 ngày
+            endDate = endDate.minusDays(1);
+        }
+
+        // Gán giá trị B_i = D_{i-1}, bắt đầu từ hàng thứ 3 (i = 2)
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row currentRow = sheet.getRow(i);
+            Row previousRow = sheet.getRow(i - 1);
+
+            // Kiểm tra nếu hàng trước đó tồn tại và ô D tại hàng i-1 có giá trị
+            if (previousRow != null && previousRow.getCell(3) != null) {
+                Cell cellBi = currentRow.createCell(1); // Ô B của hàng i
+                cellBi.setCellValue(previousRow.getCell(3).getStringCellValue()); // Gán giá trị từ D_{i-1}
+            }
+        }
+
+        // Duyệt qua các hàng, bắt đầu từ hàng thứ 3 (i = 2)
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row currentRow = sheet.getRow(i);
+            Cell cellB = currentRow.getCell(1);  // Ô B của hàng i
+            Cell cellC = currentRow.createCell(2);  // Ô C của hàng i
+
+            // Kiểm tra nếu ô B có giá trị
+            if (cellB != null && cellB.getCellType() == CellType.STRING) {
+                String valueB = cellB.getStringCellValue();  // Lấy giá trị của ô B
+
+                // Biến để theo dõi nếu tìm thấy giá trị B trong hàng
+                boolean found = false;
+
+                // Kiểm tra từ cột D đến cột cuối cùng của hàng hiện tại
+                for (int j = 3; j < currentRow.getLastCellNum(); j++) {
+                    Cell cell = currentRow.getCell(j);
+                    if (cell != null && cell.getCellType() == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue();
+
+                        // So sánh giá trị với ô B
+                        if (valueB.equals(cellValue)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Gán giá trị cho ô C: dấu `.` nếu tìm thấy, hoặc giá trị của ô B nếu không
+                if (found) {
+                    cellC.setCellValue(".");
+                } else {
+                    cellC.setCellValue(valueB);
+                }
+            }
+        }
+
+        // Ghi workbook vào file
+        try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
+            workbook.write(fileOut);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            workbook.close();
+        }
+    }
+
+    @Test
     public void TC_04_Editable() {
         driver.get("https://react.semantic-ui.com/maximize/dropdown-example-search-selection/");
 
