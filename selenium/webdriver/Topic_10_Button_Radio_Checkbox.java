@@ -803,7 +803,8 @@ public class Topic_10_Button_Radio_Checkbox {
     @Test
     public void TC_4D() throws IOException {
         // Cấu hình startDate và endDate theo định dạng DD-MM-YYYY
-        String startDateStr = "29-10-2024";
+        String startDateStr = "30-10-2024";
+        // Xem cho ngày mai thì endDate để ngày hôm nay
         String endDateStr = "31-10-2024";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate startDate = LocalDate.parse(startDateStr, formatter);
@@ -818,6 +819,7 @@ public class Topic_10_Button_Radio_Checkbox {
         headerRow.createCell(0).setCellValue("Ngày");
         headerRow.createCell(1).setCellValue("KQ");
         headerRow.createCell(2).setCellValue("Xịt");
+        headerRow.createCell(3).setCellValue("Mức");
 
         // Biến rowNum để bắt đầu từ hàng 1
         int rowNum = 1;
@@ -845,13 +847,13 @@ public class Topic_10_Button_Radio_Checkbox {
             String nextDateStr = endDate.plusDays(1).format(formatter);
             row.createCell(0).setCellValue(nextDateStr);
 
-            int cellNum = 3; // Bắt đầu từ cột B
+            int cellNum = 4; // Bắt đầu từ cột B
             for (WebElement prize : prizes) {
                 String prizeText = prize.getText();
-                // Kiểm tra và chỉ lấy 4 chữ số cuối nếu prizeText có 5 chữ số
-                if (prizeText.matches("\\d{4,}")) {
-                    if (prizeText.length() == 5) {
-                        prizeText = prizeText.substring(1);  // Lấy từ vị trí 1 đến cuối
+                // Kiểm tra và chỉ lấy 3 chữ số cuối nếu prizeText có nhiều hơn 3 chữ số
+                if (prizeText.matches("\\d{3,}")) {
+                    if (prizeText.length() > 3) {
+                        prizeText = prizeText.substring(prizeText.length() - 3);  // Lấy 3 ký tự cuối
                     }
                     row.createCell(cellNum++).setCellValue(prizeText);
                 }
@@ -861,15 +863,15 @@ public class Topic_10_Button_Radio_Checkbox {
             endDate = endDate.minusDays(1);
         }
 
-        // Gán giá trị B_i = D_{i-1}, bắt đầu từ hàng thứ 3 (i = 2)
+        // Gán giá trị B_i = E_{i-1}, bắt đầu từ hàng thứ 3 (i = 2)
         for (int i = 2; i <= sheet.getLastRowNum(); i++) {
             Row currentRow = sheet.getRow(i);
             Row previousRow = sheet.getRow(i - 1);
 
             // Kiểm tra nếu hàng trước đó tồn tại và ô D tại hàng i-1 có giá trị
-            if (previousRow != null && previousRow.getCell(3) != null) {
+            if (previousRow != null && previousRow.getCell(4) != null) {
                 Cell cellBi = currentRow.createCell(1); // Ô B của hàng i
-                cellBi.setCellValue(previousRow.getCell(3).getStringCellValue()); // Gán giá trị từ D_{i-1}
+                cellBi.setCellValue(previousRow.getCell(4).getStringCellValue()); // Gán giá trị từ D_{i-1}
             }
         }
 
@@ -909,6 +911,47 @@ public class Topic_10_Button_Radio_Checkbox {
             }
         }
 
+        // Thêm vòng lặp từ ô B2 để kiểm tra và tìm mức
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row currentRow = sheet.getRow(i);
+            Cell cellB = currentRow.getCell(1);
+
+            if (cellB != null && cellB.getCellType() == CellType.STRING) {
+                String valueB = cellB.getStringCellValue();
+
+                // Truy cập trang web và dán giá trị vào textarea
+                driver.get("https://xs.olawin.com/");
+                List<String> rowValues = new ArrayList<>();
+                for (int j = 4; j < currentRow.getLastCellNum(); j++) {
+                    rowValues.add(currentRow.getCell(j).getStringCellValue());
+                }
+
+                // Ghép dữ liệu thành chuỗi và dán vào textarea
+                String joinedData = String.join(",", rowValues);
+                WebElement inputArea = driver.findElement(By.xpath("//textarea[@id='tms_txt_input']"));
+                inputArea.clear();
+                inputArea.sendKeys(joinedData);
+                driver.findElement(By.xpath("//input[@id='tms_btn_tms_3d']")).click();
+                sleepInSecond(2);
+
+                // Lấy dữ liệu output
+                WebElement outputArea = driver.findElement(By.xpath("//textarea[@id='tms_txt_output']"));
+                String outputText = outputArea.getText();
+
+                // Kiểm tra valueB có ở mức nào và gán vào ô D
+                String[] outputLines = outputText.split("\n");
+                int level = -1;
+                for (String line : outputLines) {
+                    if (line.startsWith("Mức:")) {
+                        level = Integer.parseInt(line.split(":")[1].trim().split(" ")[0]);
+                    } else if (line.contains(valueB)) {
+                        currentRow.createCell(3).setCellValue(level);
+                        break;
+                    }
+                }
+            }
+        }
+
         // Ghi workbook vào file
         try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
             workbook.write(fileOut);
@@ -917,6 +960,8 @@ public class Topic_10_Button_Radio_Checkbox {
         } finally {
             workbook.close();
         }
+
+        driver.quit();
     }
 
     @Test
