@@ -803,9 +803,9 @@ public class Topic_10_Button_Radio_Checkbox {
     @Test
     public void TC_4D() throws IOException {
         // Cấu hình startDate và endDate theo định dạng DD-MM-YYYY
-        String startDateStr = "30-10-2024";
+        String startDateStr = "31-10-2024";
         // Xem cho ngày mai thì endDate để ngày hôm nay
-        String endDateStr = "31-10-2024";
+        String endDateStr = "02-11-2024";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate startDate = LocalDate.parse(startDateStr, formatter);
         LocalDate endDate = LocalDate.parse(endDateStr, formatter);
@@ -936,27 +936,7 @@ public class Topic_10_Button_Radio_Checkbox {
 
                 WebElement outputArea = driver.findElement(By.xpath("//textarea[@id='tms_txt_output']"));
 
-                // Đợi cho đến khi textarea có nội dung
-                String outputText = "";
-                for (int k = 0; k < 20; k++) { // Thử tối đa 20 lần với khoảng cách 1 giây mỗi lần
-                    outputText = outputArea.getAttribute("value"); // Lấy thuộc tính "value" thay vì getText()
-                    if (outputText != null && !outputText.isEmpty()) {
-                        break; // Thoát vòng lặp khi có dữ liệu
-                    }
-                    try {
-                        Thread.sleep(1000); // Đợi 1 giây
-                    } catch (InterruptedException e) {
-                        System.out.println("Thread was interrupted during sleep.");
-                        break;
-                    }
-                }
-
-                // Kiểm tra và in kết quả
-                if (outputText != null && !outputText.isEmpty()) {
-                    System.out.println("Output Text:\n" + outputText);
-                } else {
-                    System.out.println("Output Text is still empty or null after waiting.");
-                }
+                String outputText = outputArea.getAttribute("value");
 
                 String[] outputLines = outputText.split("\\R"); // Tách output theo dòng
                 int level = -1;
@@ -964,21 +944,21 @@ public class Topic_10_Button_Radio_Checkbox {
 
                 for (String line : outputLines) {
                     line = line.trim(); // Loại bỏ khoảng trắng hai đầu
-                    System.out.println("Processing line: " + line); // Debug từng dòng
 
                     // Nếu dòng bắt đầu với "Mức:", cập nhật level hiện tại
                     if (line.startsWith("Mức:")) {
-                        level = Integer.parseInt(line.split(":")[1].trim().split(" ")[0]);
-                        System.out.println("Current level set to: " + level);
+                        // Tách phần trước dấu "(" và loại bỏ khoảng trắng
+                        String levelString = line.split(":")[1].split("\\(")[0].replaceAll("\\s+", "");
+                        level = Integer.parseInt(levelString); // Chuyển đổi thành số nguyên
                     }
                     // Nếu dòng không phải là "Mức:", kiểm tra xem có chứa `valueB` không
                     else if (level != -1 && line.contains(valueB)) {
                         currentRow.createCell(3).setCellValue(level);
-                        System.out.println("Found " + valueB + " at level " + level);
                         found = true;
                         break;
                     }
                 }
+
 
                 // Nếu không tìm thấy, in ra thông báo
                 if (!found) {
