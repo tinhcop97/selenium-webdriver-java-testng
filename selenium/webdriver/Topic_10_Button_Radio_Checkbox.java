@@ -875,41 +875,41 @@ public class Topic_10_Button_Radio_Checkbox {
             }
         }
 
-        // Duyệt qua các hàng, bắt đầu từ hàng thứ 3 (i = 2)
-        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
-            Row currentRow = sheet.getRow(i);
-            Cell cellB = currentRow.getCell(1);  // Ô B của hàng i
-            Cell cellC = currentRow.createCell(2);  // Ô C của hàng i
-
-            // Kiểm tra nếu ô B có giá trị
-            if (cellB != null && cellB.getCellType() == CellType.STRING) {
-                String valueB = cellB.getStringCellValue();  // Lấy giá trị của ô B
-
-                // Biến để theo dõi nếu tìm thấy giá trị B trong hàng
-                boolean found = false;
-
-                // Kiểm tra từ cột D đến cột cuối cùng của hàng hiện tại
-                for (int j = 3; j < currentRow.getLastCellNum(); j++) {
-                    Cell cell = currentRow.getCell(j);
-                    if (cell != null && cell.getCellType() == CellType.STRING) {
-                        String cellValue = cell.getStringCellValue();
-
-                        // So sánh giá trị với ô B
-                        if (valueB.equals(cellValue)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-
-                // Gán giá trị cho ô C: dấu `.` nếu tìm thấy, hoặc giá trị của ô B nếu không
-                if (found) {
-                    cellC.setCellValue(".");
-                } else {
-                    cellC.setCellValue(valueB);
-                }
-            }
-        }
+//        // Duyệt qua các hàng, bắt đầu từ hàng thứ 3 (i = 2)
+//        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+//            Row currentRow = sheet.getRow(i);
+//            Cell cellB = currentRow.getCell(1);  // Ô B của hàng i
+//            Cell cellC = currentRow.createCell(2);  // Ô C của hàng i
+//
+//            // Kiểm tra nếu ô B có giá trị
+//            if (cellB != null && cellB.getCellType() == CellType.STRING) {
+//                String valueB = cellB.getStringCellValue();  // Lấy giá trị của ô B
+//
+//                // Biến để theo dõi nếu tìm thấy giá trị B trong hàng
+//                boolean found = false;
+//
+//                // Kiểm tra từ cột D đến cột cuối cùng của hàng hiện tại
+//                for (int j = 3; j < currentRow.getLastCellNum(); j++) {
+//                    Cell cell = currentRow.getCell(j);
+//                    if (cell != null && cell.getCellType() == CellType.STRING) {
+//                        String cellValue = cell.getStringCellValue();
+//
+//                        // So sánh giá trị với ô B
+//                        if (valueB.equals(cellValue)) {
+//                            found = true;
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                // Gán giá trị cho ô C: dấu `.` nếu tìm thấy, hoặc giá trị của ô B nếu không
+//                if (found) {
+//                    cellC.setCellValue(".");
+//                } else {
+//                    cellC.setCellValue(valueB);
+//                }
+//            }
+//        }
 
         // Thêm vòng lặp từ ô B2 để kiểm tra và tìm mức
         for (int i = 2; i <= sheet.getLastRowNum(); i++) {
@@ -934,21 +934,57 @@ public class Topic_10_Button_Radio_Checkbox {
                 driver.findElement(By.xpath("//input[@id='tms_btn_tms_3d']")).click();
                 sleepInSecond(2);
 
-                // Lấy dữ liệu output
                 WebElement outputArea = driver.findElement(By.xpath("//textarea[@id='tms_txt_output']"));
-                String outputText = outputArea.getText();
 
-                // Kiểm tra valueB có ở mức nào và gán vào ô D
-                String[] outputLines = outputText.split("\n");
-                int level = -1;
-                for (String line : outputLines) {
-                    if (line.startsWith("Mức:")) {
-                        level = Integer.parseInt(line.split(":")[1].trim().split(" ")[0]);
-                    } else if (line.contains(valueB)) {
-                        currentRow.createCell(3).setCellValue(level);
+                // Đợi cho đến khi textarea có nội dung
+                String outputText = "";
+                for (int k = 0; k < 20; k++) { // Thử tối đa 20 lần với khoảng cách 1 giây mỗi lần
+                    outputText = outputArea.getAttribute("value"); // Lấy thuộc tính "value" thay vì getText()
+                    if (outputText != null && !outputText.isEmpty()) {
+                        break; // Thoát vòng lặp khi có dữ liệu
+                    }
+                    try {
+                        Thread.sleep(1000); // Đợi 1 giây
+                    } catch (InterruptedException e) {
+                        System.out.println("Thread was interrupted during sleep.");
                         break;
                     }
                 }
+
+                // Kiểm tra và in kết quả
+                if (outputText != null && !outputText.isEmpty()) {
+                    System.out.println("Output Text:\n" + outputText);
+                } else {
+                    System.out.println("Output Text is still empty or null after waiting.");
+                }
+
+                String[] outputLines = outputText.split("\\R"); // Tách output theo dòng
+                int level = -1;
+                boolean found = false;
+
+                for (String line : outputLines) {
+                    line = line.trim(); // Loại bỏ khoảng trắng hai đầu
+                    System.out.println("Processing line: " + line); // Debug từng dòng
+
+                    // Nếu dòng bắt đầu với "Mức:", cập nhật level hiện tại
+                    if (line.startsWith("Mức:")) {
+                        level = Integer.parseInt(line.split(":")[1].trim().split(" ")[0]);
+                        System.out.println("Current level set to: " + level);
+                    }
+                    // Nếu dòng không phải là "Mức:", kiểm tra xem có chứa `valueB` không
+                    else if (level != -1 && line.contains(valueB)) {
+                        currentRow.createCell(3).setCellValue(level);
+                        System.out.println("Found " + valueB + " at level " + level);
+                        found = true;
+                        break;
+                    }
+                }
+
+                // Nếu không tìm thấy, in ra thông báo
+                if (!found) {
+                    System.out.println(valueB + " not found in any level");
+                }
+
             }
         }
 
@@ -958,10 +994,10 @@ public class Topic_10_Button_Radio_Checkbox {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            // Đảm bảo đóng workbook để giải phóng file
             workbook.close();
+            driver.quit();
         }
-
-        driver.quit();
     }
 
     @Test
