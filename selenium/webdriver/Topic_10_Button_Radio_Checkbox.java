@@ -2,9 +2,7 @@ package webdriver;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.util.IOUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -104,7 +102,7 @@ public class Topic_10_Button_Radio_Checkbox {
 
         driver.findElement(By.id("engine3")).click();
 
-        if (!driver.findElement(By.id("engine3")).isSelected()){
+        if (!driver.findElement(By.id("engine3")).isSelected()) {
             driver.findElement(By.id("engine3")).click();
             System.out.println("có phải chọn lại");
         }
@@ -118,7 +116,7 @@ public class Topic_10_Button_Radio_Checkbox {
 
         driver.findElement(By.xpath("//input[@id='mat-radio-4-input']")).click();
 
-        if (!driver.findElement(By.xpath("//input[@id='mat-radio-4-input']")).isSelected()){
+        if (!driver.findElement(By.xpath("//input[@id='mat-radio-4-input']")).isSelected()) {
             driver.findElement(By.xpath("//input[@id='mat-radio-4-input']")).click();
             System.out.println("có phải chọn lại");
         }
@@ -128,7 +126,7 @@ public class Topic_10_Button_Radio_Checkbox {
         driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-1-input']")).click();
         driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-2-input']")).click();
 
-        if (driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-1-input']")).isSelected()&&driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-2-input']")).isSelected()){
+        if (driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-1-input']")).isSelected() && driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-2-input']")).isSelected()) {
             driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-1-input']")).click();
             driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-2-input']")).click();
             System.out.println(driver.findElement(By.xpath("//input[@id='mat-mdc-checkbox-1-input']")).isSelected());
@@ -144,14 +142,14 @@ public class Topic_10_Button_Radio_Checkbox {
 
         List<WebElement> allCheckboxes = driver.findElements(By.cssSelector("div.form-single-column input[type='checkbox']"));
 
-        for (WebElement checkbox : allCheckboxes){
+        for (WebElement checkbox : allCheckboxes) {
             if (!checkbox.isSelected())
-            checkbox.click();
+                checkbox.click();
         }
 
         //verify tất cả đc chọn
 
-        for (WebElement checkbox : allCheckboxes){
+        for (WebElement checkbox : allCheckboxes) {
             Assert.assertTrue(checkbox.isSelected());
         }
 
@@ -162,14 +160,14 @@ public class Topic_10_Button_Radio_Checkbox {
 
         allCheckboxes = driver.findElements(By.cssSelector("div.form-single-column input[type='checkbox']"));
 
-        for (WebElement checkbox : allCheckboxes){
-            if (checkbox.getAttribute("value").equals("Heart Attack")&&!checkbox.isSelected()){
+        for (WebElement checkbox : allCheckboxes) {
+            if (checkbox.getAttribute("value").equals("Heart Attack") && !checkbox.isSelected()) {
                 checkbox.click();
             }
         }
 
-        for (WebElement checkbox : allCheckboxes){
-            if (checkbox.getAttribute("value").equals("Heart Attack")){
+        for (WebElement checkbox : allCheckboxes) {
+            if (checkbox.getAttribute("value").equals("Heart Attack")) {
                 Assert.assertTrue(checkbox.isSelected());
             } else {
                 Assert.assertFalse(checkbox.isSelected());
@@ -458,8 +456,8 @@ public class Topic_10_Button_Radio_Checkbox {
                 String optionText = option.getText();
 //                System.out.println("Text của option " + (i + 1) + " là: " + optionText);
                 String giaiDB = driver.findElement(By.xpath("//div[@class='toto-lottery-betting__sidebar-widget']//tbody/tr[1]//div[@class='toto-lottery-result-board__result-list']")).getText();
-                String giai3D = giaiDB.substring(2,4);
-                String giai4D = giaiDB.substring(1,3);
+                String giai3D = giaiDB.substring(2, 4);
+                String giai4D = giaiDB.substring(1, 3);
                 giaiDB = giaiDB.substring(giaiDB.length() - 2);
 //                System.out.println(giaiDB);
 
@@ -486,7 +484,7 @@ public class Topic_10_Button_Radio_Checkbox {
     }
 
     @Test
-    public void TC_checkTanSuat4D(){
+    public void TC_checkTanSuat4D() {
         try {
             FileInputStream file = new FileInputStream("data.xlsx");
             Workbook workbook = new XSSFWorkbook(file);
@@ -648,7 +646,7 @@ public class Topic_10_Button_Radio_Checkbox {
     }
 
     @Test
-    public void TC_ccxs() throws IOException{
+    public void TC_ccxs() throws IOException {
         // Khởi tạo Workbook và Sheet cho Excel
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("MB");
@@ -800,12 +798,134 @@ public class Topic_10_Button_Radio_Checkbox {
         return resultString.toString();
     }
 
+    private void checkValue0x1x(String url, String date, Row row, String DB, int urlIndex) {
+        driver.get(url);
+
+        // Nhập ngày vào trường nhập liệu
+        WebElement dateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay']"));
+        dateInput.clear();
+        dateInput.sendKeys(date);
+
+        // Nhấn nút "Xem"
+        WebElement xemButton = driver.findElement(By.xpath("//input[@value='Xem']"));
+        xemButton.click();
+        sleepInSecond(1);
+
+        // Chờ và kiểm tra giá trị 0x và 1x
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        try {
+            // Kiểm tra ô `0x`
+            WebElement td0x = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//td[contains(text(), '0x')]/following-sibling::td")));
+            String td0xValue = td0x.getText();
+//            System.out.println("Giá trị của 0x tại URL " + url + ": " + td0xValue);
+
+            if (td0xValue.contains(DB)) {
+                row.createCell(2 + urlIndex).setCellValue("x"); // Ghi vào cột 2, 3, 4, hoặc 5 tùy vào urlIndex
+            }
+
+            // Kiểm tra ô `1x`
+            WebElement td1x = driver.findElement(By.xpath("//td[contains(text(), '1x')]/following-sibling::td"));
+            String td1xValue = td1x.getText();
+//            System.out.println("Giá trị của 1x tại URL " + url + ": " + td1xValue);
+
+            if (td1xValue.contains(DB)) {
+                row.createCell(8 + urlIndex).setCellValue("x"); // Ghi vào cột 8, 9, 10, hoặc 11 tùy vào urlIndex
+            }
+        } catch (Exception e) {
+            System.out.println("Không tìm thấy 0x hoặc 1x cho URL: " + url);
+        }
+    }
+
+
+    @Test
+    public void TC_ccxs_0x1x() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("0x1x");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ");
+        headerRow.createCell(2).setCellValue("0xEvent");
+        headerRow.createCell(3).setCellValue("0xThiDau");
+        headerRow.createCell(4).setCellValue("0xMoBat");
+        headerRow.createCell(5).setCellValue("0xDanMucSo");
+//        headerRow.createCell(6).setCellValue("0xLoai");
+        headerRow.createCell(8).setCellValue("1xEvent");
+        headerRow.createCell(9).setCellValue("1xThiDau");
+        headerRow.createCell(10).setCellValue("1xMoBat");
+        headerRow.createCell(11).setCellValue("1xDanMucSo");
+//        headerRow.createCell(12).setCellValue("1xLoai");
+
+        // Danh sách các URL cần truy cập
+        List<String> urls = Arrays.asList(
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietEventMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietThiDauMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietMoBatMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietDanMucSoVaDan9x0x_V2.aspx"
+//                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietLoaiMucSoVaDan9x0x_V2.aspx"
+        );
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("02/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("02/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            Row row = sheet.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB = value.substring(value.length() - 2);
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB);
+
+            // Lặp qua từng URL trong danh sách và gọi hàm `checkValue0x1x` cho mỗi URL
+            for (int i = 0; i < urls.size(); i++) {
+                checkValue0x1x(urls.get(i), formattedDate, row, DB, i);
+            }
+        }
+
+        // Lưu Workbook vào tệp Excel
+        try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+    }
+
     @Test
     public void TC_4D() throws IOException {
         // Cấu hình startDate và endDate theo định dạng DD-MM-YYYY
-        String startDateStr = "31-10-2024";
+        String startDateStr = "03-11-2024";
         // Xem cho ngày mai thì endDate để ngày hôm nay
-        String endDateStr = "02-11-2024";
+        String endDateStr = "03-11-2024";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate startDate = LocalDate.parse(startDateStr, formatter);
         LocalDate endDate = LocalDate.parse(endDateStr, formatter);
