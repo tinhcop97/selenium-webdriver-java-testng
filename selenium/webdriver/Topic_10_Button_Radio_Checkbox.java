@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.support.Color;
@@ -669,8 +670,8 @@ public class Topic_10_Button_Radio_Checkbox {
         );
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("28/10/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("14/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("14/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -796,6 +797,119 @@ public class Topic_10_Button_Radio_Checkbox {
         }
 
         return resultString.toString();
+    }
+
+    @Test
+    public void TC_ccxs_results() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("MB");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ");
+        headerRow.createCell(2).setCellValue("Event");
+        headerRow.createCell(3).setCellValue("ThiDau");
+        headerRow.createCell(4).setCellValue("MoBat");
+        headerRow.createCell(5).setCellValue("Dan");
+        headerRow.createCell(6).setCellValue("Loai");
+
+        // Khởi tạo biến để lưu trữ kết quả log
+        StringBuilder valueOfDate = new StringBuilder();
+
+        // Danh sách các URL cần truy cập
+        List<String> urls = Arrays.asList(
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietEventMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietThiDauMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietMoBatMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietDanMucSoVaDan9x0x_V2.aspx",
+                "https://congcuxoso.net/MienBac/DacBiet/ThanhVienChotSo/DacBietLoaiMucSoVaDan9x0x_V2.aspx"
+        );
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("01/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("01/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB = value.substring(value.length() - 2);
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB);
+
+            // Lặp qua từng URL trong danh sách
+            for (int urlIndex = 0; urlIndex < urls.size(); urlIndex++) {
+                String result = analysByDate(urls.get(urlIndex), formattedDate, DB);
+                row.createCell(2 + urlIndex).setCellValue(result);
+            }
+
+        }
+
+        // Lưu Workbook vào tệp Excel
+        try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+
+        driver.quit();
+    }
+
+    private String analysByDate(String url, String date, String DB) {
+        driver.get(url);
+
+        WebElement dateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay']"));
+        dateInput.clear();
+        dateInput.sendKeys(date);
+
+        WebElement xemButton = driver.findElement(By.xpath("//input[@value='Xem']"));
+        xemButton.click();
+
+        sleepInSecond(1);
+
+        for (int i = 10; i >= 1; i--) {
+            try {
+                WebElement cell = driver.findElement(By.xpath("//table[@id='MainContent_dgvDan9x0x']//tr[@align='center'][" + i + "]/td[@style='width:799px;']"));
+                if (cell.getText().contains(DB)) {
+                    WebElement precedingCell = driver.findElement(By.xpath("//table[@id='MainContent_dgvDan9x0x']//tr[@align='center'][" + i + "]/td[@style='width:799px;']/preceding-sibling::td"));
+                    return precedingCell.getText().substring(0, 1);
+                }
+            } catch (NoSuchElementException e) {
+                // Nếu không tìm thấy phần tử, tiếp tục vòng lặp
+                continue;
+            }
+        }
+
+        return "G";
     }
 
     private void checkValue0x1x(String url, String date, Row row, String DB, int urlIndex) {
@@ -925,7 +1039,7 @@ public class Topic_10_Button_Radio_Checkbox {
         // Cấu hình startDate và endDate theo định dạng DD-MM-YYYY
         String startDateStr = "03-11-2024";
         // Xem cho ngày mai thì endDate để ngày hôm nay
-        String endDateStr = "03-11-2024";
+        String endDateStr = "05-11-2024";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate startDate = LocalDate.parse(startDateStr, formatter);
         LocalDate endDate = LocalDate.parse(endDateStr, formatter);
