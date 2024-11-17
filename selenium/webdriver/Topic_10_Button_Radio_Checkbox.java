@@ -828,8 +828,8 @@ public class Topic_10_Button_Radio_Checkbox {
         );
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("01/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("14/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -951,6 +951,232 @@ public class Topic_10_Button_Radio_Checkbox {
         }
     }
 
+    @Test
+    public void TC_dau_duoi() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("MB");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ");
+        headerRow.createCell(2).setCellValue("0");
+        headerRow.createCell(3).setCellValue("1");
+        headerRow.createCell(4).setCellValue("2");
+        headerRow.createCell(5).setCellValue("3");
+        headerRow.createCell(6).setCellValue("4");
+        headerRow.createCell(7).setCellValue("5");
+        headerRow.createCell(8).setCellValue("6");
+        headerRow.createCell(9).setCellValue("7");
+        headerRow.createCell(10).setCellValue("8");
+        headerRow.createCell(11).setCellValue("9");
+        headerRow.createCell(12).setCellValue("8x8");
+        headerRow.createCell(13).setCellValue("Húp");
+        headerRow.createCell(14).setCellValue("6x6");
+        headerRow.createCell(15).setCellValue("Húp");
+
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("15/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("17/11/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB = value.substring(value.length() - 2);
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB);
+
+            String formattedPreviousDate = date.plusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+            driver.get("https://ketqua04.net/dau-duoi-loto");
+
+            WebElement dateInputDauDuoi = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInputDauDuoi.clear();
+            dateInputDauDuoi.sendKeys(date.minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            dateInputDauDuoi.sendKeys(Keys.ENTER);
+
+            WebElement countInputDauDuoi = driver.findElement(By.xpath("//input[@id='count']"));
+            countInputDauDuoi.clear();
+            countInputDauDuoi.sendKeys("4");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+
+            // Đợi phần tử cần lấy dữ liệu xuất hiện
+            wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            List<WebElement> tdElements = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                    By.xpath("//td/b[text()='Tổng'][position() <= 2]/../following-sibling::td")
+            ));
+
+            // Lấy giá trị lần lượt từ các <td> này
+            for (int i = 0; i < 10; i++) {  // Chạy từ i=0 đến i=9
+                // Lấy giá trị của 2 cột liên tiếp, tương ứng với i và i+10
+                String text1 = tdElements.get(i).getText().replace(" lần", "").trim();
+                String text2 = tdElements.get(i + 10).getText().replace(" lần", "").trim();
+
+                // Chuyển đổi sang số nguyên
+                int value1 = Integer.parseInt(text1);
+                int value2 = Integer.parseInt(text2);
+
+                // Thực hiện phép cộng
+                int sum = value1 + value2;
+
+                // Lưu vào cột tương ứng (từ cột 2 đến cột 11)
+                row.createCell(2 + i).setCellValue(sum);
+            }
+
+            // Khai báo danh sách labels chỉ chứa các chỉ số từ 0 đến 9
+            List<String> labels = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+
+
+            // Lưu giá trị từ các cột 2 đến 11 vào danh sách với chỉ số cột
+            List<Map.Entry<Integer, String>> valueWithLabels = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                // Lấy giá trị của các cột từ 2 đến 11
+                int sum = (int) row.getCell(2 + i).getNumericCellValue();
+                valueWithLabels.add(new AbstractMap.SimpleEntry<>(sum, labels.get(i))); // Lưu cặp giá trị và label
+            }
+
+//            System.out.println("Danh sách giá trị và cột ban đầu (valueWithLabels): " + valueWithLabels);
+
+            // Sắp xếp theo giá trị giảm dần
+            valueWithLabels.sort((entry1, entry2) -> entry2.getKey() - entry1.getKey());
+
+//            System.out.println("Danh sách giá trị sau khi sắp xếp giảm dần (valueWithLabels): " + valueWithLabels);
+
+            // Lấy top 4 ở trên (4 giá trị lớn nhất)
+            StringBuilder top4Upper = new StringBuilder();
+//            System.out.println("Top 4 lớn nhất:");
+            for (int i = 0; i < 4; i++) {
+                int valueTop4Up = valueWithLabels.get(i).getKey();
+                String labelTop4Up = valueWithLabels.get(i).getValue();
+//                System.out.println("Giá trị top 4 ở trên: " + valueTop4Up + " tại " + labelTop4Up);
+                top4Upper.append(labelTop4Up); // Lấy tên cột tương ứng
+            }
+
+            // Lấy top 4 ở dưới (4 giá trị nhỏ nhất trong 6 còn lại)
+            StringBuilder top4Lower = new StringBuilder();
+//            System.out.println("Top 4 nhỏ nhất:");
+            for (int i = 9; i > 5; i--) {
+                int valueTop4Down = valueWithLabels.get(i).getKey();
+                String labelTop4Down = valueWithLabels.get(i).getValue();
+//                System.out.println("Giá trị top 4 ở dưới: " + valueTop4Down + " tại " + labelTop4Down);
+                top4Lower.append(labelTop4Down); // Lấy tên cột tương ứng
+            }
+
+            // Kết quả cuối cùng
+            String result8 = top4Upper.toString() + top4Lower.toString();
+//            System.out.println("Kết quả cuối cùng (result): " + result8);
+
+            // Lưu kết quả vào cell 12
+            row.createCell(12).setCellValue(result8);
+
+            // Lấy top 3 ở trên (3 giá trị lớn nhất)
+            StringBuilder top3Upper = new StringBuilder();
+//            System.out.println("Top 3 lớn nhất:");
+            for (int i = 0; i < 3; i++) {
+                int valueTop3Up = valueWithLabels.get(i).getKey();
+                String labelTop3Up = valueWithLabels.get(i).getValue();
+//                System.out.println("Giá trị top 3 ở trên: " + valueTop3Up + " tại " + labelTop3Up);
+                top3Upper.append(labelTop3Up); // Lấy tên cột tương ứng
+            }
+
+            // Lấy top 3 ở dưới (3 giá trị nhỏ nhất trong 6 còn lại)
+            StringBuilder top3Lower = new StringBuilder();
+//            System.out.println("Top 3 nhỏ nhất:");
+            for (int i = 9; i > 6; i--) {
+                int valueTop3Down = valueWithLabels.get(i).getKey();
+                String labelTop3Down = valueWithLabels.get(i).getValue();
+//                System.out.println("Giá trị top 3 ở dưới: " + valueTop3Down + " tại " + labelTop3Down);
+                top3Lower.append(labelTop3Down); // Lấy tên cột tương ứng
+            }
+
+            // Kết quả cuối cùng
+            String result6 = top3Upper.toString() + top3Lower.toString();
+//            System.out.println("Kết quả cuối cùng (result): " + result6);
+
+            // Lưu kết quả vào cell 14
+            row.createCell(14).setCellValue(result6);
+
+            //verify
+
+            // Lấy giá trị từ cell 1 (giả sử là cell 1 chứa giá trị "92")
+            String cell1Value = row.getCell(1).getStringCellValue();
+
+            // Lấy giá trị từ cell 12 (giả sử cell 12 chứa kết quả "16209543")
+            String cell12Value = row.getCell(12).getStringCellValue();
+
+            // Lấy giá trị từ cell 14 (giả sử cell 14 chứa kết quả "127954")
+            String cell14Value = row.getCell(14).getStringCellValue();
+
+            // Kiểm tra xem tất cả các ký tự trong cell 1 có xuất hiện trong cell 12 hay không
+            boolean containsAllInCell12 = true;
+            for (char c : cell1Value.toCharArray()) {
+                if (cell12Value.indexOf(c) == -1) {
+                    containsAllInCell12 = false;
+                    break;
+                }
+            }
+
+            // Kiểm tra xem tất cả các ký tự trong cell 1 có xuất hiện trong cell 14 hay không
+            boolean containsAllInCell14 = true;
+            for (char c : cell1Value.toCharArray()) {
+                if (cell14Value.indexOf(c) == -1) {
+                    containsAllInCell14 = false;
+                    break;
+                }
+            }
+
+            // Kiểm tra nếu không có chứa tất cả ký tự của cell 1, lưu vào cell 13 hoặc cell 15
+            if (!containsAllInCell12) {
+                row.createCell(13).setCellValue("x");
+            }
+
+            if (!containsAllInCell14) {
+                row.createCell(15).setCellValue("x");
+            }
+
+
+
+        }
+
+        // Lưu Workbook vào tệp Excel
+        try (FileOutputStream fileOut = new FileOutputStream("data.xlsx")) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+
+        driver.quit();
+    }
 
     @Test
     public void TC_ccxs_0x1x() throws IOException {
