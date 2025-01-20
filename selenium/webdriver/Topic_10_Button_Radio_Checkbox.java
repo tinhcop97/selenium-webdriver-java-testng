@@ -1449,11 +1449,12 @@ public class Topic_10_Button_Radio_Checkbox {
         headerRow.createCell(13).setCellValue("3D Bù");
         headerRow.createCell(14).setCellValue("3D Today");
         headerRow.createCell(15).setCellValue("Húp Today");
+        headerRow.createCell(18).setCellValue("SL Today");
 
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/01/2020", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("19/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("10/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("21/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
