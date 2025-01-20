@@ -1435,17 +1435,25 @@ public class Topic_10_Button_Radio_Checkbox {
         // Đặt tiêu đề cho các cột
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Ngày");
-        headerRow.createCell(1).setCellValue("KQ");
-        headerRow.createCell(2).setCellValue("Dàn tách");
+        headerRow.createCell(1).setCellValue("KQ2D");
+        headerRow.createCell(2).setCellValue("Tách 2D");
         headerRow.createCell(3).setCellValue("SL 2D");
-        headerRow.createCell(4).setCellValue("Trúng/trượt");
-        headerRow.createCell(6).setCellValue("3D");
+        headerRow.createCell(4).setCellValue("Húp 2D");
+        headerRow.createCell(6).setCellValue("Tách 3D");
         headerRow.createCell(7).setCellValue("SL 3D");
+        headerRow.createCell(8).setCellValue("3D loại 7d");
+        headerRow.createCell(9).setCellValue("SL 3D loại 7d");
+        headerRow.createCell(10).setCellValue("KQ3D");
+        headerRow.createCell(11).setCellValue("Húp 3D");
+        headerRow.createCell(12).setCellValue("2D Bù");
+        headerRow.createCell(13).setCellValue("3D Bù");
+        headerRow.createCell(14).setCellValue("3D Today");
+        headerRow.createCell(15).setCellValue("Húp Today");
 
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("12/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("01/01/2020", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("19/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -1477,10 +1485,15 @@ public class Topic_10_Button_Radio_Checkbox {
 
             // Lấy giá trị của phần tử
             String value = giaiDacBiet.getText();
-            String DB = value.substring(value.length() - 2);
+            String DB2D = value.substring(value.length() - 2);
+            String DB3D = value.substring(value.length() - 3);
+
+//            System.out.println("Giá trị gốc: " + giaiDacBiet.getText());
+//            System.out.println(value + DB2D + DB3D );
 
             // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
-            row.createCell(1).setCellValue(DB);
+            row.createCell(1).setCellValue(DB2D);
+            row.createCell(10).setCellValue(DB3D);
 
             String formattedPreviousDate = date.minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             driver.get("https://ketqua04.net/so-ket-qua");
@@ -1546,39 +1559,10 @@ public class Topic_10_Button_Radio_Checkbox {
             for (int i = 0; i <= 999; i++) {
                 fullSet.add(String.format("%03d", i)); // Đảm bảo định dạng 3 chữ số
             }
+//            System.out.println("Initial fullSet (000-999): " + fullSet); // Log fullSet ban đầu
 
-            // Lấy các bộ số từ cột G của 4 hàng liên tiếp
-            Set<String> allTriples = new TreeSet<>();
-            for (int offset = 0; offset < 4; offset++) {
-                Row currentRow = sheet.getRow(row.getRowNum() + offset);
-                if (currentRow != null) {
-                    Cell cellG = currentRow.getCell(6); // Cột G (index 6)
-                    if (cellG != null && cellG.getCellType() == CellType.STRING) {
-                        String[] triplesInRow = cellG.getStringCellValue().split(", "); // Tách theo dấu phẩy
-                        allTriples.addAll(Arrays.asList(triplesInRow)); // Thêm vào tập hợp
-                    }
-                }
-            }
-
-            // Loại bỏ các bộ số đã có từ fullSet
-            fullSet.removeAll(allTriples);
-
-            // Ghép các bộ số còn lại thành chuỗi và lưu vào ô I
-            StringBuilder remainingSet = new StringBuilder();
-            for (String remainingTriple : fullSet) {
-                if (remainingSet.length() > 0) {
-                    remainingSet.append(", "); // Thêm dấu phẩy giữa các bộ số
-                }
-                remainingSet.append(remainingTriple); // Thêm bộ số vào chuỗi
-            }
-
-            // Lưu vào cột I (index 8)
-            row.createCell(8).setCellValue(remainingSet.toString());
-
-
-
-            // Kiểm tra cột C (các cặp số) có chứa giá trị ở cột B (DB) hay không
-            if (!uniquePairs.contains(DB)) {
+            // Kiểm tra cột C (các cặp số) có chứa giá trị ở cột B (2D) hay không
+            if (!uniquePairs.contains(DB2D)) {
                 row.createCell(4).setCellValue("x"); // Điền "x" vào cột E nếu không chứa
             } else {
                 row.createCell(4).setCellValue("Húp");
@@ -1616,11 +1600,175 @@ public class Topic_10_Button_Radio_Checkbox {
             Cell cellF1 = row1.createCell(5); // Cột F (index 5)
             cellF1.setCellValue(sumF); // Gán giá trị tổng vào F1
         }
+        // Sau khi hoàn tất vòng lặp và đã có dữ liệu trong sheet:
+        // Lấy các bộ số từ cột G của 7 hàng liên tiếp
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Bắt đầu từ hàng thứ 2 (index = 1)
+            Set<String> allTriples = new TreeSet<>();
+            for (int offset = 0; offset < 7; offset++) { // Lấy 7 hàng liên tiếp
+                Row currentRow = sheet.getRow(i + offset);
+                if (currentRow != null) {
+                    Cell cellG = currentRow.getCell(6); // Cột G (index = 6)
+                    if (cellG != null && cellG.getCellType() == CellType.STRING) {
+                        String cellValue = cellG.getStringCellValue();
+                        String[] triplesInRow = cellValue.split(", ");
+                        allTriples.addAll(Arrays.asList(triplesInRow));
+                    }
+                }
+            }
+
+            // Tạo tập hợp các bộ số từ 000 đến 999
+            Set<String> fullSet = new TreeSet<>();
+            for (int j = 0; j <= 999; j++) {
+                fullSet.add(String.format("%03d", j));
+            }
+
+            // Loại bỏ các bộ số đã có
+            fullSet.removeAll(allTriples);
+
+            // Ghép các bộ số còn lại thành chuỗi
+            StringBuilder remainingSet = new StringBuilder();
+            for (String remainingTriple : fullSet) {
+                if (remainingSet.length() > 0) {
+                    remainingSet.append(", ");
+                }
+                remainingSet.append(remainingTriple);
+            }
+
+            // Đếm số phần tử còn lại
+            int remainingCount = fullSet.size();
+
+            // Lưu vào cột I (index = 8) và cột J (index = 9)
+            Row row = sheet.getRow(i);
+            if (row != null) {
+                // Lưu danh sách các bộ số còn lại vào cột I
+                row.createCell(8).setCellValue(remainingSet.toString());
+
+                // Lưu số lượng phần tử vào cột J
+                row.createCell(9).setCellValue(remainingCount);
+            }
+
+            // Kiểm tra cột I (các cặp số còn lại) có chứa giá trị ở cột K (3D) hay không
+            Cell cellI = row.getCell(8); // Cột I (index 8)
+            Cell cellJ = row.getCell(10); // Cột J (index 6, 3D)
+
+            if (cellI != null && cellJ != null && cellI.getCellType() == CellType.STRING && cellJ.getCellType() == CellType.STRING) {
+                String cellIValue = cellI.getStringCellValue(); // Lấy giá trị từ cột I
+                String cellJValue = cellJ.getStringCellValue(); // Lấy giá trị từ cột J
+
+                // Kiểm tra các giá trị trong cột J có nằm trong cột I hay không
+                String[] jValues = cellJValue.split(", "); // Tách các giá trị ở cột J
+                boolean containsAll = true;
+
+                for (String jValue : jValues) {
+                    if (!cellIValue.contains(jValue)) {
+                        containsAll = false; // Nếu có giá trị không nằm trong cột I
+                        break;
+                    }
+                }
+
+                // Ghi kết quả vào cột K (index 9)
+                if (containsAll) {
+                    row.createCell(11).setCellValue("Húp"); // Ghi kết quả nếu tất cả đều nằm trong cột I
+                } else {
+                    row.createCell(11).setCellValue("x"); // Ghi kết quả nếu có giá trị không nằm trong cột I
+                }
+            } else {
+                row.createCell(11).setCellValue("Không thể kiểm tra"); // Ghi thông báo nếu cột I hoặc J không hợp lệ
+            }
+        }
+
+        // Dàn 2D bù và 3D bù
+        headerRow.createCell(16).setCellValue("00,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99");
+        headerRow.createCell(17).setCellValue("000,003,004,006,011,012,013,014,015,018,019,022,024,028,030,031,032,036,039,040,041,042,043,044,045,046,047,050,053,054,056,060,061,062,063,065,067,069,070,071,076,080,081,082,085,086,088,089,091,093,094,095,097,098,099,100,102,106,107,108,109,110,111,112,113,114,115,116,118,119,120,121,123,125,126,127,128,129,130,131,132,133,135,136,138,139,141,142,144,146,148,151,154,155,157,158,159,162,167,169,170,171,174,177,178,180,181,183,184,185,186,188,190,191,192,194,195,196,198,200,202,204,206,208,209,211,212,213,218,219,220,221,222,223,224,225,226,228,229,230,232,236,237,238,239,241,242,243,244,245,247,248,249,251,252,255,256,257,260,261,263,264,265,266,267,269,273,274,275,278,282,283,285,286,287,288,289,295,296,298,299,300,303,305,307,308,309,313,317,320,322,323,324,325,327,329,330,331,332,333,334,335,342,344,346,347,348,349,351,354,356,358,359,361,363,364,365,367,368,369,370,371,375,376,380,382,383,384,386,388,389,391,394,396,397,399,400,401,404,405,406,408,409,410,412,414,415,419,422,424,426,427,430,431,433,436,437,438,439,440,441,442,443,444,448,449,452,454,457,458,459,460,461,462,465,466,467,468,470,472,474,475,477,479,480,481,482,483,484,486,487,488,489,490,493,494,496,497,499,500,502,503,505,507,508,509,510,512,513,521,522,523,524,525,526,528,529,530,532,534,535,538,540,543,544,545,546,548,549,550,551,553,554,555,556,557,561,562,563,566,567,570,571,572,576,577,578,579,580,581,586,592,593,594,596,597,599,600,601,604,609,610,612,613,614,615,616,617,618,619,620,623,624,627,629,631,632,634,635,636,638,639,640,645,647,649,650,651,657,658,659,660,661,662,663,664,665,668,669,670,675,676,677,678,679,681,683,684,685,686,687,688,691,694,695,696,697,698,699,701,702,703,706,707,708,711,712,713,714,715,716,720,721,723,724,726,728,732,733,736,738,741,743,746,747,748,751,753,754,755,756,757,758,759,761,762,763,764,765,766,768,770,772,775,776,777,779,780,781,782,783,787,788,789,793,795,796,797,798,799,801,805,808,811,813,815,817,818,819,821,823,826,830,832,836,840,841,842,843,844,845,850,851,852,853,855,856,857,858,859,860,861,864,865,866,867,869,870,872,875,876,877,879,880,882,883,885,888,890,892,894,896,897,901,902,903,904,909,911,913,914,915,916,917,918,924,925,927,929,930,931,932,936,938,939,940,942,945,946,948,949,950,952,953,954,957,958,959,960,963,964,965,966,967,969,971,972,973,974,977,978,979,980,982,985,987,990,991,993,994,996,999");
+
+        for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+            Row row = sheet.getRow(i);
+            if (row != null) {
+                // Lấy giá trị cột C và I
+                String value2D = headerRow.getCell(16).getStringCellValue();  // Giá trị 2D bù từ header cột 16
+                String value3D = headerRow.getCell(17).getStringCellValue();  // Giá trị 3D bù từ header cột 17
+
+
+                String valueC = row.getCell(2) != null ? row.getCell(2).getStringCellValue() : "";  // Cột C
+                String valueI = row.getCell(8) != null ? row.getCell(8).getStringCellValue() : "";  // Cột I
+
+
+                // Ghép giá trị cột C với value2D bù, loại bỏ trùng lặp
+                Set<String> combined2D = new TreeSet<>();
+                String[] valueCArray = valueC.split(",");  // Tách chuỗi cột C thành mảng
+                String[] value2DArray = value2D.split(",");  // Tách chuỗi 2D bù thành mảng
+
+                // Thêm tất cả giá trị từ cột C vào Set sau khi loại bỏ khoảng trắng
+                for (String val : valueCArray) {
+                    combined2D.add(val.trim());  // Loại bỏ khoảng trắng trước và sau
+                }
+
+                // Thêm tất cả giá trị từ value2D bù vào Set (loại bỏ trùng lặp tự động)
+                for (String val : value2DArray) {
+                    combined2D.add(val.trim());  // Loại bỏ khoảng trắng trước và sau
+                }
+
+                // Lưu vào cột M
+                row.createCell(12).setCellValue(String.join(", ", combined2D));
+
+                // Thêm số từ 0 đến 9 vào trước mỗi giá trị trong combined2D
+                Set<String> finalCombined2D = new TreeSet<>();
+                for (int j = 0; j <= 9; j++) {
+                    for (String val : combined2D) {
+                        // Thêm số 0-9 vào trước từng giá trị
+                        finalCombined2D.add(String.format("%d%s", j, val));
+                    }
+                }
+
+                // Ghép giá trị cột I với value3D bù, loại bỏ trùng lặp
+                Set<String> combined3D = new TreeSet<>();
+                String[] valueIArray = valueI.split(",");  // Tách chuỗi cột I thành mảng
+                String[] value3DArray = value3D.split(",");  // Tách chuỗi 3D bù thành mảng
+
+                // Thêm tất cả giá trị từ cột I vào Set sau khi loại bỏ khoảng trắng
+                for (String val : valueIArray) {
+                    combined3D.add(val.trim());  // Loại bỏ khoảng trắng trước và sau
+                }
+
+                // Thêm tất cả giá trị từ value3D bù vào Set (loại bỏ trùng lặp tự động)
+                for (String val : value3DArray) {
+                    combined3D.add(val.trim());  // Loại bỏ khoảng trắng trước và sau
+                }
+
+                // Lưu vào cột N
+                row.createCell(13).setCellValue(String.join(", ", combined3D));
+
+                // Tìm giao nhau của finalCombined2D và combined3D
+                Set<String> commonValues = new TreeSet<>(finalCombined2D);
+                commonValues.retainAll(combined3D);  // Giữ lại chỉ những phần tử chung giữa finalCombined2D và combined3D
+
+                // Lưu vào cột O
+                row.createCell(14).setCellValue(String.join(", ", commonValues));
+
+                // Kiểm tra giá trị ở cột K có nằm trong commonValues không
+                String valueK = row.getCell(10) != null ? row.getCell(10).getStringCellValue().trim() : "";  // Cột K
+
+                if (commonValues.contains(valueK)) {
+                    // Nếu có, lưu "Húp" vào cột P
+                    row.createCell(15).setCellValue("Húp");
+                } else {
+                    // Nếu không, lưu "X" vào cột P
+                    row.createCell(15).setCellValue("X");
+                }
+
+                // Đếm số phần tử trong commonValues và lưu vào cột S
+                int commonValuesSize = commonValues.size();
+                row.createCell(18).setCellValue(commonValuesSize);  // Cột S (cột 18)
+            }
+        }
+
+
         // Lưu file Excel
         try (FileOutputStream fileOut = new FileOutputStream("TachDan.xlsx")) {
             workbook.write(fileOut);
         }
         workbook.close();
+        driver.close();
     }
 
     @Test
