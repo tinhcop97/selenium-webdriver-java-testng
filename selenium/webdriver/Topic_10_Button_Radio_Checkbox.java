@@ -34,6 +34,7 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 public class Topic_10_Button_Radio_Checkbox {
     WebDriver driver;
+    JavascriptExecutor js;
     WebDriverWait explicitwait;
     String projectPath = System.getProperty("user.dir");
     String osName = System.getProperty("os.name");
@@ -48,6 +49,8 @@ public class Topic_10_Button_Radio_Checkbox {
         }
 
         driver = new ChromeDriver();
+        js = (JavascriptExecutor) driver;
+
         explicitwait = new WebDriverWait(driver, Duration.ofSeconds(30));
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         driver.manage().window().maximize();
@@ -176,6 +179,35 @@ public class Topic_10_Button_Radio_Checkbox {
         }
 
 
+    }
+
+    @Test
+    public void TC_05_RadioButton() {
+        driver.get("https://login.ubuntu.com/");
+        //var newUserRadio = $$("input#id_new_user)[0];
+        //newUserRadio.click();
+        By newUserRadioInput = By.cssSelector("input#id_new_user");
+
+        js.executeScript("arguments[0].click();",driver.findElement(newUserRadioInput));
+        Assert.assertTrue(driver.findElement(newUserRadioInput).isSelected());
+
+        By tempCheckbox = By.cssSelector("input#id_accept_tos");
+        js.executeScript("arguments[0].click();",driver.findElement(tempCheckbox));
+        Assert.assertTrue(driver.findElement(newUserRadioInput).isSelected());
+
+    }
+
+    @Test
+    public void TC_06_RadioButton2() {
+        driver.get("https://docs.google.com/forms/d/e/1FAIpQLSfiypnd69zhuDkjKgqvpID9kwO29UCzeCVrGGtbNPZXQok0jA/viewform");
+
+        By canThoRadio = By.xpath("//div[@data-value='Cần Thơ']");
+
+        Assert.assertEquals(driver.findElement(canThoRadio).getAttribute("aria-checked"),"false");
+
+        driver.findElement(canThoRadio).click();
+
+        Assert.assertEquals(driver.findElement(canThoRadio).getAttribute("aria-checked"),"true");
     }
 
 
@@ -1454,7 +1486,7 @@ public class Topic_10_Button_Radio_Checkbox {
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
         LocalDate startDate = LocalDate.parse("10/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("21/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("22/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
