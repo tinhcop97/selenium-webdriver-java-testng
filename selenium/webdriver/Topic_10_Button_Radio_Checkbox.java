@@ -210,6 +210,40 @@ public class Topic_10_Button_Radio_Checkbox {
         Assert.assertEquals(driver.findElement(canThoRadio).getAttribute("aria-checked"),"true");
     }
 
+    @Test
+    public void TC_07_AcceptAlert() {
+        driver.get("https://automationfc.github.io/basic-form/index.html");
+
+        By alertButton = By.cssSelector("button[onclick='jsAlert()']");
+
+        driver.findElement(alertButton).click();
+
+        Alert alert = driver.switchTo().alert();
+
+        Assert.assertEquals(alert.getText(),"I am a JS Alert");
+
+        alert.accept();
+    }
+
+    @Test
+    public void TC_08_ConfirmAlert() {
+        driver.get("https://automationfc.github.io/basic-form/index.html");
+
+        By alertButton = By.cssSelector("button[onclick='jsConfirm()']");
+
+        driver.findElement(alertButton).click();
+
+        Alert alert = driver.switchTo().alert();
+
+        Assert.assertEquals(alert.getText(),"I am a JS Confirm");
+
+        alert.dismiss();
+
+        WebElement result = driver.findElement(By.xpath("//div[@class='example']//p[@id='result']\n"));
+        System.out.println(result.getText());
+        Assert.assertEquals(result.getText(),"You clicked: Cancel");
+    }
+
 
     @Test
     public void TC_getByDate() {
