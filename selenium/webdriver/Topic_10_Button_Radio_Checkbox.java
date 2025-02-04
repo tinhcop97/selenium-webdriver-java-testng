@@ -28,6 +28,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -1492,6 +1494,7 @@ public class Topic_10_Button_Radio_Checkbox {
         return result.toString().trim();
     }
 
+
     @Test
     public void TC_tachdan() throws IOException {
         // Khởi tạo Workbook và Sheet cho Excel
@@ -1519,8 +1522,8 @@ public class Topic_10_Button_Radio_Checkbox {
 
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("10/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("22/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("01/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("02/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -1913,6 +1916,323 @@ public class Topic_10_Button_Radio_Checkbox {
             workbook.write(fileOut);
         } finally {
             workbook.close();
+        }
+    }
+
+    @Test
+    public void TC_ccxs_DanDacBietKhung1Ngay_30days() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheetKQ = workbook.createSheet("DanDacBietKhung1Ngay");
+        Sheet sheetXuLy = workbook.createSheet("XuLy");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheetKQ.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ");
+        headerRow.createCell(2).setCellValue("UDSM");
+        headerRow.createCell(3).setCellValue("Mức");
+        headerRow.createCell(4).setCellValue("Dàn");
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("01/08/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("03/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String formattedBefore1Date = date.minusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String formattedBefore30Date = date.minusDays(32).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            Row row = sheetKQ.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB = value.substring(value.length() - 2);
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB);
+
+            driver.get("https://congcuxoso.com/MienBac/DacBiet/ThanhVienChotSo/DanDacBietKhung1NgayView2FRNew.aspx");
+
+            WebElement fromDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay1']"));
+            WebElement toDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay2']"));
+            WebElement submit = driver.findElement(By.xpath("//input[@id='MainContent_btnLoad']"));
+            fromDateInput.clear();
+            fromDateInput.sendKeys(formattedDate);
+            toDateInput.clear();
+            toDateInput.sendKeys(formattedDate);
+            submit.click();
+
+            // Chờ cho loading xuất hiện
+            WebDriverWait wait1 = new WebDriverWait(driver, Duration.ofSeconds(10));
+            // Chờ đến khi phần tử loading xuất hiện
+            try {
+                wait1.until(ExpectedConditions.visibilityOfElementLocated(By.id("MainContent_UpdateProgress1")));
+            } catch (TimeoutException e) {
+                System.out.println("Phần tử loading không xuất hiện, tiếp tục chạy...");
+            }
+
+            // Chờ cho loading biến mất
+            wait1.until(ExpectedConditions.invisibilityOfElementLocated(By.id("MainContent_UpdateProgress1")));
+
+
+            // Tìm tất cả các phần tử
+            List<WebElement> names = driver.findElements(By.xpath("//td[@style='background-color:#FFCC66;']"));
+            // Tìm lại danh sách các phần tử có background-color #0066FF
+            List<WebElement> dans = driver.findElements(By.xpath("//td[@style='background-color:#FFCC66;']/following-sibling::td[1]"));
+
+            // Tạo sheet, hoặc lấy sheet hiện tại từ workbook
+            int rowNumXuLy = 0;  // Biến chỉ số dòng, bắt đầu từ dòng 0
+
+            // Lưu các giá trị vào cột A (từ phần tử màu vàng)
+            for (WebElement name : names) {
+                try {
+                    // Lấy giá trị của phần tử
+                    String text = name.getText();
+
+                    // Tạo một dòng mới trong sheet
+                    Row rowXuLy = sheetXuLy.createRow(rowNumXuLy);
+
+                    // Lưu giá trị vào cột A (chỉ số 0 là cột A)
+                    Cell cellA = rowXuLy.createCell(0);
+                    cellA.setCellValue(text);
+
+                    System.out.println("Cột A: " + text);  // In ra console
+                    rowNumXuLy++;  // Tăng chỉ số dòng
+                } catch (StaleElementReferenceException e) {
+                    // Xử lý nếu có lỗi StaleElementReferenceException
+                }
+            }
+            rowNumXuLy = 0;
+            // Lưu các giá trị vào cột B (từ phần tử màu xanh)
+            for (int i = 0; i < dans.size(); i++) {
+                try {
+                    // Lấy giá trị của phần tử
+                    WebElement dan = dans.get(i);
+                    String text = dan.getText();
+
+                    // Kiểm tra nếu dòng đã tồn tại, nếu chưa tạo dòng mới
+                    Row rowXuLy = sheetXuLy.getRow(i);
+                    if (rowXuLy == null) {
+                        rowXuLy = sheetXuLy.createRow(i);
+                    }
+
+                    // Lưu giá trị vào cột B (chỉ số 1 là cột B)
+                    Cell cellB = rowXuLy.createCell(1);
+                    cellB.setCellValue(text);
+
+                    System.out.println("Cột B: " + text);  // In ra console
+                } catch (StaleElementReferenceException e) {
+                    // Xử lý nếu có lỗi StaleElementReferenceException
+                }
+            }
+
+            // Tìm lại các phần tử sau mỗi lần thao tác
+            fromDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay1']"));
+            toDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay2']"));
+            submit = driver.findElement(By.xpath("//input[@id='MainContent_btnLoad']"));
+            fromDateInput.clear();
+            fromDateInput.sendKeys(formattedBefore30Date);
+            toDateInput.clear();
+            toDateInput.sendKeys(formattedBefore1Date);
+            submit.click();
+
+            // Chờ cho loading xuất hiện
+            WebDriverWait wait2 = new WebDriverWait(driver, Duration.ofSeconds(10));
+            // Chờ đến khi phần tử loading xuất hiện
+            wait2.until(ExpectedConditions.visibilityOfElementLocated(By.id("MainContent_UpdateProgress1")));
+
+            // Chờ cho loading biến mất
+            wait2.until(ExpectedConditions.invisibilityOfElementLocated(By.id("MainContent_UpdateProgress1")));
+
+            // Tìm lại các phần tử sau khi thao tác
+            names = driver.findElements(By.xpath("//td[@style='background-color:#FFCC66;']"));
+            rowNumXuLy = 0;
+            // Lưu các giá trị vào cột C (từ phần tử màu vàng sau khi thao tác)
+            for (WebElement name : names) {
+                try {
+                    // Lấy giá trị của phần tử
+                    String text = name.getText();
+
+                    // Kiểm tra nếu dòng đã tồn tại, nếu chưa tạo dòng mới
+                    Row rowXuLy = sheetXuLy.getRow(rowNumXuLy);
+                    if (rowXuLy == null) {
+                        rowXuLy = sheetXuLy.createRow(rowNumXuLy);
+                    }
+
+                    // Lưu giá trị vào cột C (chỉ số 2 là cột C)
+                    Cell cellC = rowXuLy.createCell(2);
+                    cellC.setCellValue(text);
+
+                    System.out.println("Cột C: " + text);  // In ra console
+                    rowNumXuLy++;  // Tăng chỉ số dòng
+                } catch (StaleElementReferenceException e) {
+                    // Xử lý nếu có lỗi StaleElementReferenceException
+                }
+            }
+
+            // Bước 1: Lưu dữ liệu từ cột A và B vào Map (name -> dàn)
+            Map<String, String> nameToDanMap = new HashMap<>();
+
+            int lastRow = sheetXuLy.getLastRowNum();
+            for (int i = 0; i <= lastRow; i++) {
+                Row rowMap = sheetXuLy.getRow(i);
+                if (rowMap != null) {
+                    Cell nameCell = rowMap.getCell(0);  // Cột A (name)
+                    Cell danCell = rowMap.getCell(1);   // Cột B (dàn)
+
+                    if (nameCell != null && danCell != null) {
+                        String name = nameCell.getStringCellValue().trim();
+                        String dan = danCell.getStringCellValue().trim();
+                        nameToDanMap.put(name, dan);
+                    }
+                }
+            }
+
+            // Bước 2: Mapping từ cột C sang cột D
+            for (int i = 0; i <= lastRow; i++) {
+                Row rowMap = sheetXuLy.getRow(i);
+                if (rowMap != null) {
+                    Cell name30daysCell = rowMap.getCell(2); // Cột C (name của 30 ngày trước)
+                    if (name30daysCell != null) {
+                        String name30days = name30daysCell.getStringCellValue().trim();
+                        String dan30days = nameToDanMap.getOrDefault(name30days, "Không có dữ liệu");
+
+                        // Ghi giá trị vào cột D
+                        Cell dan30daysCell = rowMap.createCell(3); // Cột D (dàn tương ứng)
+                        dan30daysCell.setCellValue(dan30days);
+
+                        System.out.println("Mapping: " + name30days + " -> " + dan30days);
+                    }
+                }
+            }
+
+            // Lấy số dòng cuối cùng trong sheetXuLy
+            StringBuilder columnDData = new StringBuilder(); // Dùng StringBuilder để lưu dữ liệu
+
+            // Lặp qua từng dòng để lấy dữ liệu cột D (index 3)
+            for (int i = 0; i <= lastRow; i++) {
+                Row rowMap = sheetXuLy.getRow(i);
+                if (rowMap != null) {
+                    Cell cellD = rowMap.getCell(3);  // Cột D (index 3)
+                    if (cellD != null) {
+                        columnDData.append(cellD.getStringCellValue()).append("\n"); // Xuống dòng sau mỗi giá trị
+                    }
+                }
+            }
+
+            // Tiếp tục thực hiện các thao tác trên trang khác
+            driver.get("https://taodanxoso.kangdh.com/");
+
+            // Clear hộp input
+            WebElement clearButton = driver.findElement(By.xpath("//input[@id='k_btnClear3']"));
+            clearButton.click();
+
+            // Nhập kết quả vào textarea
+            WebElement inputTextarea = driver.findElement(By.xpath("//textarea[@id='MainContent_txtInput']"));
+            inputTextarea.clear();
+            inputTextarea.sendKeys(columnDData.toString());
+
+            // Nhấn nút Tạo Mức 2D
+            WebElement create2DButton = driver.findElement(By.xpath("//input[@value='Tạo Mức 2D']"));
+            create2DButton.click();
+
+            // Nhấn nút Dàn Xuôi
+            WebElement danXuoiButton = driver.findElement(By.xpath("//button[text()='Chém Trên']"));
+            danXuoiButton.click();
+
+            // Đợi cho đến khi textarea có nội dung
+            WebDriverWait wait3 = new WebDriverWait(driver, Duration.ofSeconds(10));
+            wait3.until(driver -> !driver.findElement(By.xpath("//textarea[@id='catdanfinal']")).getAttribute("value").isEmpty());
+
+            // Lấy kết quả từ ô textarea
+            WebElement resultTextarea = driver.findElement(By.xpath("//textarea[@id='catdanfinal']"));
+            String finalResult = resultTextarea.getAttribute("value");
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(2).setCellValue(finalResult);
+
+            //Kiểm tra kqa
+            String KQngay = row.getCell(1).getStringCellValue();
+            WebElement inputTextKQngay = driver.findElement(By.xpath("//textarea[@id='kdh_txtKQ']"));
+            inputTextKQngay.clear();
+            inputTextKQngay.sendKeys(KQngay);
+
+            // Nhấn nút Dàn Xuôi
+            WebElement ktraKQ = driver.findElement(By.xpath("//input[@value='K.tra KQ']"));
+            ktraKQ.click();
+            // Tìm element lb_dlmucso và lấy text
+            WebElement lbDlmucso = driver.findElement(By.xpath("//label[@id='lb_dlmucso']"));
+            String textDlmucso = lbDlmucso.getText();
+
+            // Tìm element lb_dldan và lấy text
+            WebElement lbDldan = driver.findElement(By.xpath("//label[@id='lb_dldan']"));
+            String textDldan = lbDldan.getText();
+
+            // In ra để kiểm tra
+            System.out.println("Text của lb_dlmucso: " + textDlmucso);
+            System.out.println("Text của lb_dldan: " + textDldan);
+
+            // Xử lý lấy giá trị sau "Mức:" và trước "("
+            String mucValue = "";
+            Matcher matcherMuc = Pattern.compile("Mức:\\s*(.*?)\\s*\\(").matcher(textDlmucso);
+            if (matcherMuc.find()) {
+                mucValue = matcherMuc.group(1).replaceAll("\\s+", "").trim(); // Xóa khoảng trắng thừa
+            }
+
+            // Xử lý lấy giá trị sau "dàn:"
+            String danValue = "";
+            Matcher matcherDan = Pattern.compile("dàn:\\s*(.*)").matcher(textDldan);
+            if (matcherDan.find()) {
+                danValue = matcherDan.group(1).trim();
+            }
+
+            // Lưu vào file Excel
+            row.createCell(3).setCellValue(mucValue);  // Lưu mức vào cột 3
+            row.createCell(4).setCellValue(danValue);  // Lưu dàn vào cột 4
+
+            // In ra kiểm tra
+            System.out.println("Mức: " + mucValue);
+            System.out.println("Dàn: " + danValue);
+
+
+            // Xóa toàn bộ dữ liệu nhưng giữ lại tiêu đề nếu có
+            for (int i = sheetXuLy.getLastRowNum(); i >= 0; i--) { // Bỏ qua hàng đầu tiên nếu đó là tiêu đề
+                Row rowXoa = sheetXuLy.getRow(i);
+                if (rowXoa != null) {
+                    sheetXuLy.removeRow(rowXoa);
+                }
+            }
+
+        }
+
+        // Lưu Workbook vào tệp Excel
+        try (FileOutputStream fileOut = new FileOutputStream("DanDacBietKhung1Ngay.xlsx")) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+            driver.quit();
         }
     }
 
