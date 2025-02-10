@@ -1494,6 +1494,127 @@ public class Topic_10_Button_Radio_Checkbox {
         return result.toString().trim();
     }
 
+    @Test
+    public void TC_layKq3D() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("3D");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ2D");
+        headerRow.createCell(2).setCellValue("KQ3D");
+        headerRow.createCell(3).setCellValue("Top1");
+        headerRow.createCell(5).setCellValue("Top2");
+        headerRow.createCell(7).setCellValue("Top3");
+
+
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("01/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("09/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB2D = value.substring(value.length() - 2);
+            String DB3D = value.substring(value.length() - 3);
+
+//            System.out.println("Giá trị gốc: " + giaiDacBiet.getText());
+//            System.out.println(value + DB2D + DB3D );
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB2D);
+            row.createCell(2).setCellValue(DB3D);
+
+            String formattedPreviousDate = date.minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput1 = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput1.clear();
+            dateInput1.sendKeys(formattedPreviousDate);
+
+            WebElement countInput1 = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput1.clear();
+            countInput1.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(1);
+
+
+            List<WebElement> prizes = driver.findElements(By.xpath("//div[contains(@id, 'rs')]"));
+            StringBuilder allPrizes = new StringBuilder();
+
+            for (WebElement prize : prizes) {
+                allPrizes.append(prize.getText());
+            }
+
+            // Bước 1: Đếm tần suất xuất hiện của từng chữ số từ 0-9
+            Map<Character, Integer> frequencyMap = new HashMap<>();
+
+            // Chuyển allPrizes thành chuỗi rồi duyệt từng ký tự
+            for (char digit : allPrizes.toString().toCharArray()) {
+                if (Character.isDigit(digit)) {
+                    frequencyMap.put(digit, frequencyMap.getOrDefault(digit, 0) + 1);
+                }
+            }
+
+
+            // Bước 2: Sắp xếp theo tần suất giảm dần
+            List<Map.Entry<Character, Integer>> sortedList = new ArrayList<>(frequencyMap.entrySet());
+            sortedList.sort((a, b) -> b.getValue().compareTo(a.getValue())); // Sắp xếp giảm dần theo số lần xuất hiện
+
+            // Bước 3: Lấy ra 3 số xuất hiện nhiều nhất và lưu vào Excel
+            System.out.println("Top 3 chữ số xuất hiện nhiều nhất:");
+            for (int i = 0; i < Math.min(3, sortedList.size()); i++) {
+                char digit = sortedList.get(i).getKey();
+                int frequency = sortedList.get(i).getValue();
+
+                System.out.println("Số: " + digit + " - Xuất hiện: " + frequency + " lần");
+
+                // Chuyển 'char' thành String trước khi lưu vào Excel
+                row.createCell(3 + (i * 2)).setCellValue(String.valueOf(digit));  // Lưu số
+                row.createCell(4 + (i * 2)).setCellValue(frequency);  // Lưu tần suất
+            }
+
+
+        }
+
+        // Lưu file Excel
+        try (FileOutputStream fileOut = new FileOutputStream("3D.xlsx")) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+        driver.close();
+    }
+
 
     @Test
     public void TC_tachdan() throws IOException {
@@ -1522,8 +1643,8 @@ public class Topic_10_Button_Radio_Checkbox {
 
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("02/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("01/01/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("08/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -2252,8 +2373,8 @@ public class Topic_10_Button_Radio_Checkbox {
         headerRow.createCell(4).setCellValue("Dàn");
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("05/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("08/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("08/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -2292,6 +2413,7 @@ public class Topic_10_Button_Radio_Checkbox {
             row.createCell(1).setCellValue(DB);
 
             driver.get("https://congcuxoso.com/MienBac/DacBiet/ThanhVienChotSo/LoaiDacBietHangNgayView2FRNew.aspx");
+//            driver.get("https://congcuxoso.com/MienBac/DacBiet/ThanhVienChotSo/DanDacBietKhung1NgayView2FRNew.aspx");
 
             WebElement fromDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay1']"));
             WebElement toDateInput = driver.findElement(By.xpath("//input[@id='MainContent_txtNgay2']"));
