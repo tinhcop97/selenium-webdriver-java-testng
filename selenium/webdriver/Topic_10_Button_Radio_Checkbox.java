@@ -246,6 +246,39 @@ public class Topic_10_Button_Radio_Checkbox {
         Assert.assertEquals(result.getText(),"You clicked: Cancel");
     }
 
+    @Test
+    public void TC_09_PromptAlert() {
+        driver.get("https://automationfc.github.io/basic-form/index.html");
+
+        By alertButton = By.cssSelector("button[onclick='jsPrompt()']");
+
+        driver.findElement(alertButton).click();
+
+        Alert alert = driver.switchTo().alert();
+
+        Assert.assertEquals(alert.getText(),"I am a JS prompt");
+
+        String inputPromptAlert = "automationfc";
+
+        alert.sendKeys(inputPromptAlert);
+        alert.accept();
+
+        WebElement result = driver.findElement(By.xpath("//div[@class='example']//p[@id='result']\n"));
+        System.out.println(result.getText());
+        Assert.assertEquals(result.getText(),"You entered: " + inputPromptAlert);
+    }
+
+    @Test
+    public void TC_11_AuthenticationAlert() {
+        String username = "admin";
+        String password = "admin";
+        driver.get("https://"+ username + ":" + password + "@" + "the-internet.herokuapp.com/basic_auth");
+
+        Assert.assertEquals(driver.findElement(By.cssSelector("div.example>p")).getText(),
+                "Congratulations! You must have the proper credentials.");
+
+    }
+
 
     @Test
     public void TC_getByDate() {
@@ -2252,8 +2285,8 @@ public class Topic_10_Button_Radio_Checkbox {
         headerRow.createCell(4).setCellValue("Dàn");
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
-        LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("05/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate startDate = LocalDate.parse("09/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("10/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
