@@ -154,7 +154,7 @@ public class Topic_14_15_16_User_Interactions {
 
     @Test
     public void TC_06_DoubleClick() throws InterruptedException {
-        driver.get("https://swisnl.github.io/jQuery-contextMenu/demo.html");
+        driver.get("https://automationfc.github.io/basic-form/index.html");
 
         action.doubleClick(driver.findElement(By.xpath("//button[@ondblclick='doubleClickMe()']"))).perform();
 
@@ -178,6 +178,7 @@ public class Topic_14_15_16_User_Interactions {
 
         Alert alert = driver.switchTo().alert();
         alert.accept();
+        Thread.sleep(1000);
         Assert.assertFalse(driver.findElement(By.cssSelector("li.context-menu-icon-quit")).isDisplayed());
     }
 
