@@ -475,8 +475,8 @@ public class Topic_10_Button_Radio_Checkbox {
     public void TC_getResult35Days() {
         Workbook workbook = new XSSFWorkbook();
         boolean isFirstDai = true;
-        String username = "tinhcop97";
-        String password = "18111997";
+        String username = "";
+        String password = "";
         driver.get("https://vuabet88.info/home");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2)); // Chờ tối đa 2 giây
         WebElement banner = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='toto-modal__close-button'] | //button[@class='toto-modal__header-close-button']")));
@@ -1527,6 +1527,263 @@ public class Topic_10_Button_Radio_Checkbox {
         return result.toString().trim();
     }
 
+    @Test
+    public void xsmn() throws IOException {
+        // Khởi tạo Workbook và Sheet cho Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("xsmn");
+
+        // Đặt tiêu đề cho các cột
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Ngày");
+        headerRow.createCell(1).setCellValue("KQ2D");
+        headerRow.createCell(2).setCellValue("KQ3D");
+
+
+
+        // Thiết lập ngày bắt đầu và ngày kết thúc
+        LocalDate startDate = LocalDate.parse("08/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("11/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Biến để theo dõi số dòng Excel
+        int rowNum = 1; // Bắt đầu từ dòng 2
+
+        // Lặp qua các ngày từ startDate đến endDate
+        for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+
+            Row row = sheet.createRow(rowNum++);
+
+            // Lưu ngày vào cột đầu tiên của dòng
+            row.createCell(0).setCellValue(formattedDate);
+
+            // Lấy kết quả của ngày đó
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput.clear();
+            dateInput.sendKeys(date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+
+            WebElement countInput = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput.clear();
+            countInput.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(3);
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // thời gian chờ tối đa là 10 giây
+            WebElement giaiDacBiet = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='rs_0_0']")));
+
+            // Lấy giá trị của phần tử
+            String value = giaiDacBiet.getText();
+            String DB2D = value.substring(value.length() - 2);
+            String DB3D = value.substring(value.length() - 3);
+
+//            System.out.println("Giá trị gốc: " + giaiDacBiet.getText());
+//            System.out.println(value + DB2D + DB3D );
+
+            // Lưu giá trị DB vào cột thứ 2 của dòng hiện tại
+            row.createCell(1).setCellValue(DB2D);
+            row.createCell(2).setCellValue(DB3D);
+
+            String formattedPreviousDate = date.minusDays(1).format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            driver.get("https://ketqua04.net/so-ket-qua");
+
+            WebElement dateInput1 = driver.findElement(By.xpath("//input[@id='date']"));
+            dateInput1.clear();
+            dateInput1.sendKeys(formattedPreviousDate);
+
+            WebElement countInput1 = driver.findElement(By.xpath("//input[@id='count']"));
+            countInput1.clear();
+            countInput1.sendKeys("1");
+            driver.findElement(By.xpath("//button[@type='submit']")).click();
+//            sleepInSecond(1);
+
+
+            List<WebElement> prizes = driver.findElements(By.xpath("//div[contains(@id, 'rs')]"));
+
+            int columnIndex = 3; // Bắt đầu từ cột 3 (Excel index 0-based)
+
+            for (WebElement prize : prizes) {
+                String text = prize.getText();
+
+                // Lấy 2 số cuối nếu độ dài >= 2, nếu không thì lấy nguyên text
+                String lastTwoDigits = text.length() >= 2 ? text.substring(text.length() - 2) : text;
+
+                row.createCell(columnIndex).setCellValue(lastTwoDigits);
+                columnIndex++; // Di chuyển sang cột tiếp theo
+            }
+
+            // Duyệt từ dòng 2 (index 1) đến dòng cuối cùng
+            for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+                Row rowxsmn = sheet.getRow(i);
+
+                // Kiểm tra nếu rowxsmn không phải là null
+                if (rowxsmn == null) {
+                    continue; // Nếu dòng trống, bỏ qua
+                }
+
+                // StringBuilder để lưu tất cả kết quả từ các cell
+                StringBuilder allResults = new StringBuilder();
+
+                // Duyệt qua các cell từ cột E (index 4) đến cột AE (index 30)
+                for (int cellIndex = 4; cellIndex <= 30; cellIndex++) {
+                    // Lấy cell tại vị trí cellIndex
+                    Cell cell = rowxsmn.getCell(cellIndex);
+
+                    // Kiểm tra nếu cell là null hoặc không có giá trị
+                    if (cell != null) {
+                        // Lấy giá trị của cell nếu nó không phải là null
+                        String lastTwoDigits = cell.getStringCellValue();
+
+                        // Tạo URL với {lastTwoDigits}
+                        String url = "https://dudoanketquaxoso.com/thong-ke-nhung-ngay-de-ve-" + lastTwoDigits + ".html";
+
+                        // Truy cập vào trang web
+                        driver.get(url);
+
+                        // Tìm các phần tử có XPath //td[@style='width: 40%']
+                        List<WebElement> elements = driver.findElements(By.xpath("//td[@style='width: 40%']"));
+
+                        // StringBuilder để lưu dữ liệu lấy được từ các phần tử
+                        StringBuilder result = new StringBuilder();
+
+                        // Lặp qua các phần tử tìm được và lấy text
+                        for (WebElement element : elements) {
+                            result.append(element.getText()).append("\n"); // Lưu giá trị vào StringBuilder
+                        }
+
+                        // Thêm kết quả từ từng URL vào allResults
+                        allResults.append(result.toString()).append("\n");  // Thêm kết quả vào allResults
+                    } else {
+                        // Nếu cell là null, có thể bỏ qua hoặc thêm giá trị mặc định
+                        allResults.append("No Data").append("\n"); // Thêm thông báo mặc định nếu không có giá trị
+                    }
+                }
+
+                // Sau khi lấy dữ liệu từ tất cả các cell
+                String resultData = allResults.toString();
+
+                // Kiểm tra nếu dữ liệu vượt quá giới hạn
+                final int MAX_CELL_LENGTH = 32767; // Giới hạn độ dài cho mỗi ô trong Excel
+
+                // Nếu dữ liệu vượt quá giới hạn, chia thành nhiều phần
+                if (resultData.length() > MAX_CELL_LENGTH) {
+                    int startIndex = 0;
+                    int partIndex = 0;
+
+                    // Chia nhỏ và lưu vào các cell tiếp theo trong các cột AG, AH, AI, AJ...
+                    while (startIndex < resultData.length()) {
+                        // Lấy phần nhỏ từ chuỗi gốc
+                        String part = resultData.substring(startIndex, Math.min(startIndex + MAX_CELL_LENGTH, resultData.length()));
+
+                        // Lưu vào cột AG (index 32) trở đi
+                        rowxsmn.createCell(32 + partIndex).setCellValue(part);
+
+                        // Cập nhật chỉ số bắt đầu cho phần tiếp theo
+                        startIndex += MAX_CELL_LENGTH;
+                        partIndex++; // Chuyển đến cell tiếp theo
+                    }
+                } else {
+                    // Nếu không vượt quá giới hạn, lưu vào cột AG (index 32)
+                    rowxsmn.createCell(32).setCellValue(resultData);
+                }
+
+//                // Lấy giá trị từ cột AG (index 32) đến cột cuối cùng có dữ liệu trong dòng
+//                StringBuilder columnDData = new StringBuilder();
+//                int lastCellIndex = rowxsmn.getPhysicalNumberOfCells(); // Cột cuối cùng có dữ liệu
+//
+//                // Duyệt qua các cột từ AG (index 32) đến cột cuối cùng có giá trị
+//                for (int j = 32; j < lastCellIndex; j++) {
+//                    String cellValue = rowxsmn.getCell(j) != null ? rowxsmn.getCell(j).getStringCellValue() : ""; // Kiểm tra cell có giá trị không
+//                    columnDData.append(cellValue).append("\n"); // Nối các giá trị với nhau (có thể thêm \n giữa các giá trị nếu cần)
+//                }
+//
+//                // Tiếp tục thực hiện các thao tác trên trang khác
+//                driver.get("https://taodanxoso.kangdh.com/");
+//
+//                // Clear hộp input
+//                WebElement clearButton = driver.findElement(By.xpath("//input[@id='k_btnClear3']"));
+//                clearButton.click();
+//
+//                // Nhập kết quả vào textarea
+//                WebElement inputTextarea = driver.findElement(By.xpath("//textarea[@id='MainContent_txtInput']"));
+//                inputTextarea.clear();
+//                inputTextarea.sendKeys(columnDData.toString()); // Gửi chuỗi đã nối vào textarea
+//
+//
+//                // Nhấn nút Tạo Mức 2D
+//                WebElement create2DButton = driver.findElement(By.xpath("//input[@value='Tạo Mức 2D']"));
+//                create2DButton.click();
+//
+//                // Nhấn nút Dàn Xuôi
+//                WebElement danXuoiButton = driver.findElement(By.xpath("//button[text()='Chém Trên']"));
+//                danXuoiButton.click();
+//
+//                // Đợi cho đến khi textarea có nội dung
+//                WebDriverWait wait3 = new WebDriverWait(driver, Duration.ofSeconds(10));
+//                wait3.until(driver -> !driver.findElement(By.xpath("//textarea[@id='catdanfinal']")).getAttribute("value").isEmpty());
+//
+////                // Lấy kết quả từ ô textarea
+////                WebElement resultTextarea = driver.findElement(By.xpath("//textarea[@id='catdanfinal']"));
+////                String finalResult = resultTextarea.getAttribute("value");
+////                // Lưu ngày vào cột đầu tiên của dòng
+////                row.createCell(2).setCellValue(finalResult);
+//
+//                //Kiểm tra kqa
+//                String KQngay = rowxsmn.getCell(1).getStringCellValue();
+//                WebElement inputTextKQngay = driver.findElement(By.xpath("//textarea[@id='kdh_txtKQ']"));
+//                inputTextKQngay.clear();
+//                inputTextKQngay.sendKeys(KQngay);
+//
+//                // Nhấn nút ktra
+//                WebElement ktraKQ = driver.findElement(By.xpath("//input[@value='K.tra KQ']"));
+//                ktraKQ.click();
+//                // Tìm element lb_dlmucso và lấy text
+//                WebElement lbDlmucso = driver.findElement(By.xpath("//label[@id='lb_dlmucso']"));
+//                String textDlmucso = lbDlmucso.getText();
+//
+//                // Tìm element lb_dldan và lấy text
+//                WebElement lbDldan = driver.findElement(By.xpath("//label[@id='lb_dldan']"));
+//                String textDldan = lbDldan.getText();
+//
+//                // In ra để kiểm tra
+//                System.out.println("Text của lb_dlmucso: " + textDlmucso);
+//                System.out.println("Text của lb_dldan: " + textDldan);
+//
+//                // Xử lý lấy giá trị sau "Mức:" và trước "("
+//                String mucValue = "";
+//                Matcher matcherMuc = Pattern.compile("Mức:\\s*(.*?)\\s*\\(").matcher(textDlmucso);
+//                if (matcherMuc.find()) {
+//                    mucValue = matcherMuc.group(1).replaceAll("\\s+", "").trim(); // Xóa khoảng trắng thừa
+//                }
+//
+//                // Xử lý lấy giá trị sau "dàn:"
+//                String danValue = "";
+//                Matcher matcherDan = Pattern.compile("dàn:\\s*(.*)").matcher(textDldan);
+//                if (matcherDan.find()) {
+//                    danValue = matcherDan.group(1).trim();
+//                }
+//
+//                // Lưu vào file Excel
+////                row.createCell(3).setCellValue(mucValue);  // Lưu mức vào cột 3
+//                row.createCell(3).setCellValue(danValue);  // Lưu dàn vào cột 4
+            }
+
+
+
+
+
+
+        }
+
+        // Lưu file Excel
+        try (FileOutputStream fileOut = new FileOutputStream("xsmn.xlsx")) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+        driver.quit();
+    }
+
 
     @Test
     public void TC_tachdan() throws IOException {
@@ -2286,7 +2543,7 @@ public class Topic_10_Button_Radio_Checkbox {
 
         // Thiết lập ngày bắt đầu và ngày kết thúc
         LocalDate startDate = LocalDate.parse("01/01/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate endDate = LocalDate.parse("05/02/2025", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate endDate = LocalDate.parse("30/07/2024", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Biến để theo dõi số dòng Excel
         int rowNum = 1; // Bắt đầu từ dòng 2
@@ -2410,7 +2667,7 @@ public class Topic_10_Button_Radio_Checkbox {
             submit.click();
 
             // Chờ cho loading xuất hiện
-            WebDriverWait wait2 = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait2 = new WebDriverWait(driver, Duration.ofSeconds(20));
             // Chờ đến khi phần tử loading xuất hiện
             wait2.until(ExpectedConditions.visibilityOfElementLocated(By.id("MainContent_UpdateProgress1")));
 
