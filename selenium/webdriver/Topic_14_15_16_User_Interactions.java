@@ -196,6 +196,7 @@ public class Topic_14_15_16_User_Interactions {
     @Test
     public void TC_09_DragAndDropHTML5() throws InterruptedException,IOException {
         driver.get("https://automationfc.github.io/drag-drop-html5/");
+        Thread.sleep(2000);
 
         String jqueryDragAndDrop = getContentFile(projectPath + "\\dragAndDrop\\dragAndDrop.js");
 
@@ -205,6 +206,13 @@ public class Topic_14_15_16_User_Interactions {
 
         Assert.assertEquals(driver.findElement(By.cssSelector("div#column-a")).getText(),"B");
         Assert.assertEquals(driver.findElement(By.cssSelector("div#column-b")).getText(),"A");
+
+        //Drag B to A
+        jsExcuter.executeScript(jqueryDragAndDrop);
+        Thread.sleep(2000);
+
+        Assert.assertEquals(driver.findElement(By.cssSelector("div#column-a")).getText(),"A");
+        Assert.assertEquals(driver.findElement(By.cssSelector("div#column-b")).getText(),"B");
     }
 
     public String getContentFile(String filePath) throws IOException {
